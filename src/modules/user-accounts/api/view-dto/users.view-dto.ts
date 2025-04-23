@@ -5,8 +5,8 @@ export class UserViewDto {
   login: string;
   email: string;
   createdAt: Date;
-  firstName: string;
-  lastName: string | null;
+  // firstName: string;
+  // lastName: string | null;
 
   static mapToView(user: UserDocument): UserViewDto {
     const dto = new UserViewDto();

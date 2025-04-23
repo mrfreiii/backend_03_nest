@@ -8,23 +8,23 @@ export class UsersRepository {
   //инжектирование модели через DI
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
+  async save(user: UserDocument) {
+    await user.save();
+  }
+
   async findById(id: string): Promise<UserDocument | null> {
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    if (!isObjectId) {
+      throw new NotFoundException("user not found");
+    }
+
     return this.UserModel.findOne({
       _id: id,
       deletedAt: null,
     });
   }
 
-  async save(user: UserDocument) {
-    await user.save();
-  }
-
   async findOrNotFoundFail(id: string): Promise<UserDocument> {
-    const isObjectId = mongoose.Types.ObjectId.isValid(id);
-    if (!isObjectId) {
-      throw new NotFoundException("user not found");
-    }
-
     const user = await this.findById(id);
 
     if (!user) {

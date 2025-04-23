@@ -1,8 +1,8 @@
-import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Model } from "mongoose";
-import { UpdateUserDto } from "../dto/create-user.dto";
-import { CreateUserDomainDto } from "./dto/create-user.domain.dto";
+import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+
 import { Name, NameSchema } from "./name.schema";
+import { CreateUserDomainDto } from "./dto/create-user.domain.dto";
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -109,18 +109,18 @@ export class User {
     this.deletedAt = new Date();
   }
 
-  /**
-   * Updates the user instance with new data
-   * Resets email confirmation if email is updated
-   * @param {UpdateUserDto} dto - The data transfer object for user updates
-   * DDD сontinue: инкапсуляция (вызываем методы, которые меняют состояние\св-ва) объектов согласно правилам этого объекта
-   */
-  update(dto: UpdateUserDto) {
-    if (dto.email !== this.email) {
-      this.isEmailConfirmed = false;
-      this.email = dto.email;
-    }
-  }
+  // /**
+  //  * Updates the user instance with new data
+  //  * Resets email confirmation if email is updated
+  //  * @param {UpdateUserDto} dto - The data transfer object for user updates
+  //  * DDD сontinue: инкапсуляция (вызываем методы, которые меняют состояние\св-ва) объектов согласно правилам этого объекта
+  //  */
+  // update(dto: UpdateUserDto) {
+  //   if (dto.email !== this.email) {
+  //     this.isEmailConfirmed = false;
+  //     this.email = dto.email;
+  //   }
+  // }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

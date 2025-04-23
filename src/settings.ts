@@ -5,7 +5,7 @@ export const SETTINGS = {
   PORT: process.env.PORT || 5005,
   PATH: {
     USERS: "/users",
-    // BLOGS: '/blogs',
+    BLOGS: "/blogs",
     // POSTS: '/posts',
     // AUTH: '/auth',
     // COMMENTS: '/comments',
