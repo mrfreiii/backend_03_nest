@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { TestingModule } from './modules/testing/testing.module';
-import { BloggersPlatformModule } from './modules/bloggers-platform/bloggers-platform.module';
-import { CoreModule } from './core/core.module';
-import { config } from 'dotenv';
+import { config } from "dotenv";
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+
+import { AppService } from "./app.service";
+import { AppController } from "./app.controller";
+import { CoreModule } from "./core/core.module";
+import { TestingModule } from "./modules/testing/testing.module";
+import { UserAccountsModule } from "./modules/user-accounts/user-accounts.module";
+import { BloggersPlatformModule } from "./modules/bloggers-platform/bloggers-platform.module";
 
 config();
 
@@ -15,10 +16,10 @@ config();
     MongooseModule.forRoot(process.env.MONGO_URL!, {
       dbName: process.env?.MONGO_DB_NAME,
     }),
-    UserAccountsModule,
-    TestingModule,
-    BloggersPlatformModule,
     CoreModule,
+    TestingModule,
+    UserAccountsModule,
+    BloggersPlatformModule,
   ],
   controllers: [AppController],
   providers: [AppService],

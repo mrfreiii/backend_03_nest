@@ -1,17 +1,18 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory } from "@nestjs/core";
 
-import { AppModule } from './app.module';
-import { appSetup } from './setup/app.setup';
+import { SETTINGS } from "./settings";
+import { AppModule } from "./app.module";
+import { appSetup } from "./setup/app.setup";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
 
-  appSetup(app); //глобальные настройки приложения
-  const PORT = process.env.PORT || 5005;
+  appSetup({ app });
+  const PORT = SETTINGS.PORT;
 
   await app.listen(PORT, () => {
-    console.log('Server is running on port ' + PORT);
+    console.log("Server is running on port " + PORT);
   });
 }
 bootstrap();

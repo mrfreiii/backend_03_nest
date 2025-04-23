@@ -1,11 +1,11 @@
-import { User, UserModelType } from '../../domain/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { UserViewDto } from '../../api/view-dto/users.view-dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { FilterQuery } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
-import { FilterQuery } from 'mongoose';
-import { PaginatedViewDto } from '../../../../core/dto/base.paginated.view-dto';
-import { GetUsersQueryParams } from '../../api/input-dto/get-users-query-params.input-dto';
+import { User, UserModelType } from "../../domain/user.entity";
+import { UserViewDto } from "../../api/view-dto/users.view-dto";
+import { PaginatedViewDto } from "../../../../core/dto/base.paginated.view-dto";
+import { GetUsersQueryParams } from "../../api/input-dto/get-users-query-params.input-dto";
 
 @Injectable()
 export class UsersQueryRepository {
@@ -21,7 +21,7 @@ export class UsersQueryRepository {
     });
 
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException("user not found");
     }
 
     return UserViewDto.mapToView(user);
@@ -37,14 +37,14 @@ export class UsersQueryRepository {
     if (query.searchLoginTerm) {
       filter.$or = filter.$or || [];
       filter.$or.push({
-        login: { $regex: query.searchLoginTerm, $options: 'i' },
+        login: { $regex: query.searchLoginTerm, $options: "i" },
       });
     }
 
     if (query.searchEmailTerm) {
       filter.$or = filter.$or || [];
       filter.$or.push({
-        email: { $regex: query.searchEmailTerm, $options: 'i' },
+        email: { $regex: query.searchEmailTerm, $options: "i" },
       });
     }
 

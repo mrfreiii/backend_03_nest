@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserModelType } from '../domain/user.entity';
-import { CreateUserDto, UpdateUserDto } from '../dto/create-user.dto';
-import bcrypt from 'bcrypt';
-import { UsersRepository } from '../infrastructure/users.repository';
+import bcrypt from "bcrypt";
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+
+import { CreateUserDto } from "../dto/create-user.dto";
+import { User, UserModelType } from "../domain/user.entity";
+import { UsersRepository } from "../infrastructure/users.repository";
 
 @Injectable()
 export class UsersService {
@@ -28,17 +29,6 @@ export class UsersService {
 
     return user._id.toString();
   }
-  async updateUser(id: string, dto: UpdateUserDto): Promise<string> {
-    const user = await this.usersRepository.findOrNotFoundFail(id);
-
-    // не присваиваем св-ва сущностям напрямую в сервисах! даже для изменения одного св-ва
-    // создаём метод
-    user.update(dto); // change detection
-
-    await this.usersRepository.save(user);
-
-    return user._id.toString();
-  }
 
   async deleteUser(id: string) {
     const user = await this.usersRepository.findOrNotFoundFail(id);
@@ -47,4 +37,16 @@ export class UsersService {
 
     await this.usersRepository.save(user);
   }
+
+  // async updateUser(id: string, dto: UpdateUserDto): Promise<string> {
+  //   const user = await this.usersRepository.findOrNotFoundFail(id);
+  //
+  //   // не присваиваем св-ва сущностям напрямую в сервисах! даже для изменения одного св-ва
+  //   // создаём метод
+  //   user.update(dto); // change detection
+  //
+  //   await this.usersRepository.save(user);
+  //
+  //   return user._id.toString();
+  // }
 }

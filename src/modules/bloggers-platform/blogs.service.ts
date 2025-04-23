@@ -8,7 +8,7 @@ export class BlogsService {
     private usersExternalRepository: UsersExternalQueryRepository,
     private usersExternalService: UsersExternalService,
   ) {
-    console.log('BlogsService crated');
+    // console.log('BlogsService crated');
   }
   async hello(id: string) {
     const user = await this.usersExternalRepository.getByIdOrNotFoundFail(id);

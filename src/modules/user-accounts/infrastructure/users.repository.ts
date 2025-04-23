@@ -1,6 +1,7 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument, UserModelType } from '../domain/user.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import mongoose from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { User, UserDocument, UserModelType } from "../domain/user.entity";
 
 @Injectable()
 export class UsersRepository {
@@ -19,11 +20,16 @@ export class UsersRepository {
   }
 
   async findOrNotFoundFail(id: string): Promise<UserDocument> {
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    if (!isObjectId) {
+      throw new NotFoundException("user not found");
+    }
+
     const user = await this.findById(id);
 
     if (!user) {
       //TODO: replace with domain exception
-      throw new NotFoundException('user not found');
+      throw new NotFoundException("user not found");
     }
 
     return user;

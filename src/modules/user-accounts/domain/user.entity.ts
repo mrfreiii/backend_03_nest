@@ -1,8 +1,8 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-import { UpdateUserDto } from '../dto/create-user.dto';
-import { CreateUserDomainDto } from './dto/create-user.domain.dto';
-import { Name, NameSchema } from './name.schema';
+import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument, Model } from "mongoose";
+import { UpdateUserDto } from "../dto/create-user.dto";
+import { CreateUserDomainDto } from "./dto/create-user.domain.dto";
+import { Name, NameSchema } from "./name.schema";
 
 //флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
 /**
@@ -69,6 +69,7 @@ export class User {
    * если ипсльзуете по всей системе шв айди как string, можете юзать, если id
    */
   get id() {
+    // eslint-disable-next-line
     // @ts-ignore
     return this._id.toString();
   }
@@ -85,10 +86,11 @@ export class User {
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
     user.isEmailConfirmed = false; // пользователь ВСЕГДА должен после регистрации подтверждить свой Email
+    user.deletedAt = null;
 
     user.name = {
-      firstName: 'firstName xxx',
-      lastName: 'lastName yyy',
+      firstName: "firstName xxx",
+      lastName: "lastName yyy",
     };
 
     return user as UserDocument;
@@ -102,7 +104,7 @@ export class User {
    */
   makeDeleted() {
     if (this.deletedAt !== null) {
-      throw new Error('Entity already deleted');
+      throw new Error("Entity already deleted");
     }
     this.deletedAt = new Date();
   }
