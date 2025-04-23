@@ -1,9 +1,11 @@
 import { SETTINGS } from "../../settings";
 import { createTestBlogs } from "./helpers";
+import { createTestPosts } from "../posts/helpers";
 import { connectToTestDBAndClearRepositories, req } from "../helpers";
-import { convertObjectToQueryString } from "../../utils/convertObjectToQueryString";
 import { SortDirection } from "../../core/dto/base.query-params.input-dto";
+import { convertObjectToQueryString } from "../../utils/convertObjectToQueryString";
 import { BlogViewDto } from "../../modules/bloggers-platform/blogs/api/view-dto/blogs.view-dto";
+import { CreatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/posts.input-dto";
 import { CreateBlogInputDto } from "../../modules/bloggers-platform/blogs/api/input-dto/blogs.input-dto";
 import { GetBlogsQueryParams } from "../../modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto";
 
@@ -186,83 +188,67 @@ describe("delete blog by id /blogs/:id", () => {
   });
 });
 
-// describe("get posts by blogId /blogs", () => {
-//   connectToTestDBAndClearRepositories();
-//
-//   it("should return error if blog does not exist", async () => {
-//     await req
-//       .get(`${SETTINGS.PATH.BLOGS}/123777/posts`)
-//       .expect(404)
-//   })
-//
-//   it("should get not empty array", async () => {
-//     const createdBlog = (await createTestBlogs())[0];
-//     const createdPosts = await createTestPosts({blogId: createdBlog.id, count: 2});
-//
-//     const res = await req
-//       .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
-//       .expect(200)
-//
-//     expect(res.body.pagesCount).toBe(1);
-//     expect(res.body.page).toBe(1);
-//     expect(res.body.pageSize).toBe(10);
-//     expect(res.body.totalCount).toBe(2);
-//     expect(res.body.items.length).toBe(2);
-//
-//     expect(res.body.items).toEqual([
-//       createdPosts[1],
-//       createdPosts[0],
-//     ])
-//   })
-// })
-//
-// describe("create post by blogId /blogs", () => {
-//   connectToTestDBAndClearRepositories();
-//
-//   it("should return 404 for non existent blog", async () => {
-//     const newPost: Omit<PostViewType, "id" | "createdAt" | "blogId" | "extendedLikesInfo"> = {
-//       title: "title1",
-//       shortDescription: "shortDescription1",
-//       content: "content1",
-//       blogName: "blogName"
-//     }
-//
-//     await req
-//       .set("Authorization", validAuthHeader)
-//       .post(`${SETTINGS.PATH.BLOGS}/123777/posts`)
-//       .send(newPost)
-//       .expect(404)
-//   })
-//
-//   it("should create a post", async () => {
-//     const createdBlog = (await createTestBlogs())[0];
-//
-//     const newPost: Omit<PostViewType, "id" | "createdAt" | "blogName" | "blogId" | "extendedLikesInfo"> = {
-//       title: "title1",
-//       shortDescription: "shortDescription1",
-//       content: "content1",
-//     }
-//
-//     const res = await req
-//       .set("Authorization", validAuthHeader)
-//       .post(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
-//       .send(newPost)
-//       .expect(201)
-//
-//     expect(res.body).toEqual(
-//       {
-//         ...newPost,
-//         id: expect.any(String),
-//         blogId: createdBlog?.id,
-//         blogName: createdBlog?.name,
-//         createdAt: expect.any(String),
-//         extendedLikesInfo: {
-//           dislikesCount: 0,
-//           likesCount: 0,
-//           myStatus: "None",
-//           newestLikes: [],
-//         },
-//       }
-//     );
-//   })
-// })
+describe("get posts by blogId /blogs/:id/posts", () => {
+  connectToTestDBAndClearRepositories();
+
+  it("should return 404 for non existent blog", async () => {
+    await req.get(`${SETTINGS.PATH.BLOGS}/123777/posts`).expect(404);
+  });
+
+  it("should get not empty array", async () => {
+    const createdBlog = (await createTestBlogs())[0];
+    const createdPosts = await createTestPosts({
+      blogId: createdBlog.id,
+      count: 2,
+    });
+
+    const res = await req
+      .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
+      .expect(200);
+
+    expect(res.body.pagesCount).toBe(1);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(2);
+    expect(res.body.items.length).toBe(2);
+
+    expect(res.body.items).toEqual([createdPosts[1], createdPosts[0]]);
+  });
+});
+
+describe("create post by blogId /blogs/:id/posts", () => {
+  connectToTestDBAndClearRepositories();
+
+  it("should return 404 for non existent blog", async () => {
+    await req.post(`${SETTINGS.PATH.BLOGS}/123777/posts`).send({}).expect(404);
+  });
+
+  it("should create a post", async () => {
+    const createdBlog = (await createTestBlogs())[0];
+
+    const newPost: Omit<CreatePostInputDto, "blogId"> = {
+      title: "title1",
+      shortDescription: "shortDescription1",
+      content: "content1",
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
+      .send(newPost)
+      .expect(201);
+
+    expect(res.body).toEqual({
+      ...newPost,
+      id: expect.any(String),
+      blogId: createdBlog?.id,
+      blogName: createdBlog?.name,
+      createdAt: expect.any(String),
+      extendedLikesInfo: {
+        dislikesCount: 0,
+        likesCount: 0,
+        myStatus: "None",
+        newestLikes: [],
+      },
+    });
+  });
+});

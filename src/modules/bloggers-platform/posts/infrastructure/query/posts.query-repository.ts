@@ -11,12 +11,23 @@ import { GetPostsQueryParams } from "../../api/input-dto/get-posts-query-params.
 export class PostsQueryRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) {}
 
-  async getAll(
-    query: GetPostsQueryParams,
-  ): Promise<PaginatedViewDto<PostViewDto[]>> {
+  async getAll({
+    query,
+    blogId,
+  }: {
+    query: GetPostsQueryParams;
+    blogId?: string;
+  }): Promise<PaginatedViewDto<PostViewDto[]>> {
     const filter: FilterQuery<Post> = {
       deletedAt: null,
     };
+
+    if (blogId) {
+      filter.$or = filter.$or || [];
+      filter.$or.push({
+        blogId: { $regex: blogId, $options: "i" },
+      });
+    }
 
     const posts = await this.PostModel.find(filter)
       .sort({ [query.sortBy]: query.sortDirection })
