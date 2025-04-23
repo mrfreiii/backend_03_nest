@@ -1,7 +1,8 @@
-import { User, UserModelType } from '../../domain/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserExternalDto } from './external-dto/users.external-dto';
+import { InjectModel } from "@nestjs/mongoose";
+import { Injectable, NotFoundException } from "@nestjs/common";
+
+import { User, UserModelType } from "../../domain/user.entity";
+import { UserExternalDto } from "./external-dto/users.external-dto";
 
 @Injectable()
 export class UsersExternalQueryRepository {
@@ -17,7 +18,7 @@ export class UsersExternalQueryRepository {
     });
 
     if (!user) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException("user not found");
     }
 
     return UserExternalDto.mapToView(user);

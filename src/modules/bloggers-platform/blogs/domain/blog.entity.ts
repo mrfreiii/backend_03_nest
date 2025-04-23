@@ -55,7 +55,7 @@ export class Blog {
    * Deletion timestamp, nullable, if date exist, means entity soft deleted
    * @type {Date | null}
    */
-  @Prop({ type: Date, nullable: true })
+  @Prop({ type: Date, default: null, nullable: true })
   deletedAt: Date | null;
 
   /**
@@ -70,7 +70,6 @@ export class Blog {
     blog.description = dto.description;
     blog.websiteUrl = dto.websiteUrl;
     blog.isMembership = false; // пока всегда false
-    blog.deletedAt = null;
 
     return blog as BlogDocument;
   }

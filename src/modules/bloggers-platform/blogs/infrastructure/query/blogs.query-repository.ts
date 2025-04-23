@@ -1,5 +1,5 @@
-import { FilterQuery } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { Blog, BlogModelType } from "../../domain/blog.entity";
@@ -43,6 +43,11 @@ export class BlogsQueryRepository {
   }
 
   async getByIdOrNotFoundFail(id: string): Promise<BlogViewDto> {
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    if (!isObjectId) {
+      throw new NotFoundException("blog not found");
+    }
+
     const blog = await this.BlogModel.findOne({
       _id: id,
       deletedAt: null,

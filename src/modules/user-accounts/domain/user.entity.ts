@@ -60,7 +60,7 @@ export class User {
    * Deletion timestamp, nullable, if date exist, means entity soft deleted
    * @type {Date | null}
    */
-  @Prop({ type: Date, nullable: true })
+  @Prop({ type: Date, default: null, nullable: true })
   deletedAt: Date | null;
 
   /**
@@ -86,7 +86,6 @@ export class User {
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
     user.isEmailConfirmed = false; // пользователь ВСЕГДА должен после регистрации подтверждить свой Email
-    user.deletedAt = null;
 
     user.name = {
       firstName: "firstName xxx",
