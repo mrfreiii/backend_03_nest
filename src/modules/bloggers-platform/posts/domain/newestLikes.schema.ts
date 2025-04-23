@@ -7,10 +7,10 @@ export class NewestLikes {
   @Prop({ type: Date, required: true })
   addedAt: Date;
 
-  @Prop({ type: String, required: false })
+  @Prop({ type: String, required: true })
   userId: string;
 
-  @Prop({ type: String, required: false })
+  @Prop({ type: String, required: true })
   login: string;
 }
 

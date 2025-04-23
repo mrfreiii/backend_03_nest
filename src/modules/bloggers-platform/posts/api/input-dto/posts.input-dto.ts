@@ -4,3 +4,7 @@ export class CreatePostInputDto {
   content: string;
   blogId: string;
 }
+
+export class CreateCommentByPostIdInputDto {
+  content: string;
+}
