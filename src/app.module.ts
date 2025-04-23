@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 
 import { AppService } from "./app.service";
@@ -13,6 +14,7 @@ config();
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URL!, {
       dbName: process.env?.MONGO_DB_NAME,
     }),
