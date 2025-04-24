@@ -4,7 +4,6 @@ import { createWriteStream } from "fs";
 import { get } from "http";
 
 import { SETTINGS } from "../settings";
-import { GLOBAL_PREFIX } from "./global-prefix.setup";
 
 const serverUrl = `http://localhost:${SETTINGS.PORT}`;
 
@@ -16,7 +15,7 @@ export function swaggerSetup(app: INestApplication) {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(`${GLOBAL_PREFIX}/swagger`, app, document, {
+  SwaggerModule.setup("swagger", app, document, {
     customSiteTitle: "Swagger site title",
   });
 

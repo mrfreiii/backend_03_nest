@@ -22,7 +22,7 @@ config();
       serveRoot:
         process.env.NODE_ENV === "development"
           ? "/"
-          : `${GLOBAL_PREFIX}/swagger`,
+          : "/swagger",
     }),
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URL!, {
