@@ -2,9 +2,9 @@ import { SETTINGS } from "../../settings";
 import { createTestUsers } from "./helpers";
 import { connectToTestDBAndClearRepositories, req } from "../helpers";
 import { convertObjectToQueryString } from "../../utils/convertObjectToQueryString";
-import { UserViewDto } from "../../modules/user-accounts/api/view-dto/users.view-dto";
-import { CreateUserInputDto } from "../../modules/user-accounts/api/input-dto/users.input-dto";
-import { GetUsersQueryParams } from "../../modules/user-accounts/api/input-dto/get-users-query-params.input-dto";
+import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
+import { CreateUserInputDto } from "../../modules/user-accounts/users/api/input-dto/users.input-dto";
+import { GetUsersQueryParams } from "../../modules/user-accounts/users/api/input-dto/get-users-query-params.input-dto";
 
 describe("create user /users", () => {
   connectToTestDBAndClearRepositories();

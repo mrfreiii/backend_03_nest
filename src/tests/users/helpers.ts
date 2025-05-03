@@ -1,7 +1,7 @@
 import { req } from "../helpers";
 import { SETTINGS } from "../../settings";
-import { UserViewDto } from "../../modules/user-accounts/api/view-dto/users.view-dto";
-import { CreateUserInputDto } from "../../modules/user-accounts/api/input-dto/users.input-dto";
+import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
+import { CreateUserInputDto } from "../../modules/user-accounts/users/api/input-dto/users.input-dto";
 
 const DEFAULT_USER_PASSWORD = "qwerty12345";
 

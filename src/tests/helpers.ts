@@ -32,7 +32,7 @@ export const connectToTestDBAndClearRepositories = () => {
     await app.init();
 
     req = request(app.getHttpServer());
-    await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
+    await req.delete(`${SETTINGS.PATH.TESTING}/all-data`).expect(204);
     // req.set("Authorization", "");
 
     // nodemailerTestService.sendEmailWithConfirmationCode = jest

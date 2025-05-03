@@ -4,7 +4,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { User, UserModelType } from "../../domain/user.entity";
 import { UserViewDto } from "../../api/view-dto/users.view-dto";
-import { PaginatedViewDto } from "../../../../core/dto/base.paginated.view-dto";
+import { PaginatedViewDto } from "../../../../../core/dto/base.paginated.view-dto";
 import { GetUsersQueryParams } from "../../api/input-dto/get-users-query-params.input-dto";
 
 @Injectable()
