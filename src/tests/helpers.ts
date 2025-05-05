@@ -7,6 +7,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { SETTINGS } from "../settings";
 import { AppModule } from "../app.module";
 import { appSetup } from "../setup/app.setup";
+import { EmailServiceMock } from "./mock/email-service.mock";
+import { EmailService } from "../modules/notifications/email.service";
 
 export let req: InstanceType<typeof TestAgent>;
 
@@ -15,8 +17,7 @@ export let req: InstanceType<typeof TestAgent>;
 //   'base64',
 // );
 // export const validAuthHeader = `Basic ${encodedUserCredentials}`;
-//
-// export const nodemailerTestService = new NodemailerService();
+// export const emailServiceMock = new EmailServiceMock();
 
 export const connectToTestDBAndClearRepositories = () => {
   let app: INestApplication<App>;
@@ -24,7 +25,10 @@ export const connectToTestDBAndClearRepositories = () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(EmailService)
+      .useClass(EmailServiceMock)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     appSetup({ app, env: "e2e_tests" });

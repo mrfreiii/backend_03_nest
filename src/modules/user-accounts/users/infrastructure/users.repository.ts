@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import { Injectable, NotFoundException } from "@nestjs/common";
+
 import { User, UserDocument, UserModelType } from "../domain/user.entity";
+import { DomainException } from "../../../../core/exceptions/domain-exceptions";
+import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class UsersRepository {
-  //инжектирование модели через DI
   constructor(@InjectModel(User.name) private UserModel: UserModelType) {}
 
   async save(user: UserDocument) {
@@ -28,10 +30,20 @@ export class UsersRepository {
     const user = await this.findById(id);
 
     if (!user) {
-      //TODO: replace with domain exception
-      throw new NotFoundException("user not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "User not found",
+      });
     }
 
     return user;
+  }
+
+  findByLogin(login: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({ login });
+  }
+
+  findByEmail(email: string): Promise<UserDocument | null> {
+    return this.UserModel.findOne({ email });
   }
 }

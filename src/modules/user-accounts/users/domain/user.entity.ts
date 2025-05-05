@@ -1,10 +1,22 @@
+import { add } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 import { HydratedDocument, Model } from "mongoose";
 import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 
 import { Name, NameSchema } from "./name.schema";
 import { CreateUserDomainDto } from "./dto/create-user.domain.dto";
 
-//флаг timestemp автоматичеки добавляет поля upatedAt и createdAt
+export const loginConstraints = {
+  minLength: 3,
+  maxLength: 10,
+};
+
+export const passwordConstraints = {
+  minLength: 6,
+  maxLength: 20,
+};
+
+//флаг timestamp автоматичеки добавляет поля updatedAt и createdAt
 /**
  * User Entity Schema
  * This class represents the schema and behavior of a User entity.
@@ -20,20 +32,20 @@ export class User {
   login: string;
 
   /**
-   * Password hash for authentication
-   * @type {string}
-   * @required
-   */
-  @Prop({ type: String, required: true })
-  passwordHash: string;
-
-  /**
    * Email of the user
    * @type {string}
    * @required
    */
   @Prop({ type: String, min: 5, required: true })
   email: string;
+
+  /**
+   * Password hash for authentication
+   * @type {string}
+   * @required
+   */
+  @Prop({ type: String, required: true })
+  passwordHash: string;
 
   /**
    * Email confirmation status (if not confirmed in 2 days account will be deleted)
@@ -43,7 +55,20 @@ export class User {
   @Prop({ type: Boolean, required: true, default: false })
   isEmailConfirmed: boolean;
 
-  // @Prop(NameSchema) this variant from docdoesn't make validation for inner object
+  /**
+   * Email confirmation code
+   * @type {string}
+   */
+  @Prop({ type: String, required: false })
+  confirmationCode: string;
+
+  /**
+   * Confirmation code expiration date
+   * @type {number}
+   */
+  @Prop({ type: Number, required: false })
+  confirmationCodeExpirationDate: number;
+
   @Prop({ type: NameSchema })
   name: Name;
 
@@ -85,7 +110,7 @@ export class User {
     user.email = dto.email;
     user.passwordHash = dto.passwordHash;
     user.login = dto.login;
-    user.isEmailConfirmed = false; // пользователь ВСЕГДА должен после регистрации подтверждить свой Email
+    user.isEmailConfirmed = false;
 
     user.name = {
       firstName: "firstName xxx",
@@ -106,6 +131,17 @@ export class User {
       throw new Error("Entity already deleted");
     }
     this.deletedAt = new Date();
+  }
+
+  setConfirmationCode() {
+    const code = uuidv4();
+
+    this.confirmationCode = code;
+    this.confirmationCodeExpirationDate = add(new Date(), {
+      minutes: 2,
+    }).getTime();
+
+    return code;
   }
 
   // /**
