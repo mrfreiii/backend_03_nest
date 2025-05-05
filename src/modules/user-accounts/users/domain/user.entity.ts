@@ -144,6 +144,10 @@ export class User {
     return code;
   }
 
+  confirmRegistration() {
+    this.isEmailConfirmed = true;
+  }
+
   // /**
   //  * Updates the user instance with new data
   //  * Resets email confirmation if email is updated

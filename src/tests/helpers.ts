@@ -53,22 +53,22 @@ export const connectToTestDBAndClearRepositories = () => {
   });
 };
 
-// export const RealDate = Date;
-// export const mockDate = (isoDate: string) => {
-//   class MockDate extends RealDate {
-//     constructor() {
-//       super();
-//       return new RealDate(isoDate);
-//     }
-//
-//     static now() {
-//       return new RealDate(isoDate).getTime();
-//     }
-//   }
-//
-//   // @ts-expect-error: some error
-//   global.Date = MockDate;
-// };
+export const RealDate = Date;
+export const mockDate = (isoDate: string) => {
+  class MockDate extends RealDate {
+    constructor() {
+      super();
+      return new RealDate(isoDate);
+    }
+
+    static now() {
+      return new RealDate(isoDate).getTime();
+    }
+  }
+
+  // @ts-expect-error: some error
+  global.Date = MockDate;
+};
 
 // export const delayInSec = (delay: number) => {
 //   return new Promise((resolve) => {

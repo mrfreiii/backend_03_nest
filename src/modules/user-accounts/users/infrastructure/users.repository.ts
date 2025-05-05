@@ -46,4 +46,10 @@ export class UsersRepository {
   findByEmail(email: string): Promise<UserDocument | null> {
     return this.UserModel.findOne({ email });
   }
+
+  findByConfirmationCode(
+    confirmationCode: string,
+  ): Promise<UserDocument | null> {
+    return this.UserModel.findOne({ confirmationCode });
+  }
 }

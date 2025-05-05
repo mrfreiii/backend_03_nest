@@ -1,5 +1,11 @@
 import { SETTINGS } from "../../settings";
-import { connectToTestDBAndClearRepositories, req } from "../helpers";
+import { DEFAULT_USER_EMAIL, registerTestUser } from "./helpers";
+import {
+  connectToTestDBAndClearRepositories,
+  mockDate,
+  RealDate,
+  req,
+} from "../helpers";
 import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input-dto/register-user.input-dto";
 
 // import {
@@ -17,12 +23,12 @@ import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input
 // import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
 // import { RateLimitRepository } from "../../repositories/rateLimitsRepositories";
 //
-// let validConfirmationOrRecoveryCode = "999888777";
-// jest.mock("uuid", () => ({
-//     v4: () => {
-//         return validConfirmationOrRecoveryCode;
-//     }
-// }));
+const validConfirmationOrRecoveryCode = "999888777";
+jest.mock("uuid", () => ({
+  v4: () => {
+    return validConfirmationOrRecoveryCode;
+  },
+}));
 
 describe("register user /registration", () => {
   connectToTestDBAndClearRepositories();
@@ -73,6 +79,27 @@ describe("register user /registration", () => {
       .post(`${SETTINGS.PATH.AUTH}/registration`)
       .send(newUser)
       .expect(204);
+  });
+
+  it("should return 400 for user with same email", async () => {
+    await registerTestUser();
+
+    const newUser: RegisterUserInputDto = {
+      login: "userLogin",
+      password: "userPassword",
+      email: DEFAULT_USER_EMAIL,
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/registration`)
+      .send(newUser)
+      .expect(400);
+
+    expect(res.body.errorsMessages.length).toBe(1);
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "email",
+      message: "User with the same email already exists",
+    });
   });
 
   // it("should return 429 for 6th attempt during 10 seconds", async () => {
@@ -137,6 +164,123 @@ describe("register user /registration", () => {
   //     .post(`${SETTINGS.PATH.AUTH}/registration`)
   //     .send(newUser6)
   //     .expect(429);
+  // });
+});
+
+describe("confirm user registration /registration-confirmation", () => {
+  connectToTestDBAndClearRepositories();
+
+  beforeAll(async () => {
+    await registerTestUser();
+  });
+
+  afterEach(() => {
+    global.Date = RealDate;
+  });
+
+  it("should return 400 for code not a string", async () => {
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+      .send({ code: 777 })
+      .expect(400);
+
+    expect(res.body.errorsMessages.length).toBe(1);
+    expect(res.body.errorsMessages).toEqual([
+      {
+        field: "code",
+        message: "code must be a string; Received value: 777",
+      },
+    ]);
+  });
+
+  it("should return 400 for invalid confirmation code", async () => {
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+      .send({ code: "00000" })
+      .expect(400);
+
+    expect(res.body.errorsMessages.length).toBe(1);
+    expect(res.body.errorsMessages).toEqual([
+      {
+        field: "code",
+        message: "Invalid confirmation code",
+      },
+    ]);
+  });
+
+  it("should return 400 for code expiration", async () => {
+    mockDate("2098-11-25T12:34:56z");
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+      .send({ code: validConfirmationOrRecoveryCode })
+      .expect(400);
+
+    expect(res.body.errorsMessages.length).toBe(1);
+    expect(res.body.errorsMessages).toEqual([
+      {
+        field: "code",
+        message: "Confirmation code expired",
+      },
+    ]);
+  });
+
+  it("should return 204 for correct confirmation code", async () => {
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+      .send({ code: validConfirmationOrRecoveryCode })
+      .expect(204);
+  });
+
+  // it("should return 429 for 6th attempt and 400 after waiting 10sec", async () => {
+  //   await ioc.get(RateLimitRepository).clearDB();
+  //
+  //   // attempt #1
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
+  //
+  //   // attempt #2
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
+  //
+  //   // attempt #3
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
+  //
+  //   // attempt #4
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
+  //
+  //   // attempt #5
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
+  //
+  //   // attempt #6
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(429);
+  //
+  //   const dateInFuture = add(new Date(), {
+  //     seconds: 10,
+  //   });
+  //   mockDate(dateInFuture.toISOString());
+  //
+  //   // attempt #7 after waiting
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+  //     .send({ code: "00000" })
+  //     .expect(400);
   // });
 });
 
@@ -285,7 +429,7 @@ describe("register user /registration", () => {
 //             .expect(401)
 //     })
 // })
-//
+
 // describe("check user /me", () => {
 //     connectToTestDBAndClearRepositories();
 //
@@ -332,110 +476,6 @@ describe("register user /registration", () => {
 //     })
 // })
 
-// describe("confirm user registration /registration-confirmation", () => {
-//     connectToTestDBAndClearRepositories();
-//
-//     beforeAll(async () => {
-//         await registerTestUser();
-//     })
-//
-//     afterEach(() => {
-//         global.Date = RealDate;
-//     })
-//
-//     it("should return 400 for invalid confirmation code", async () => {
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         expect(res.body.errorsMessages.length).toBe(1);
-//         expect(res.body.errorsMessages).toEqual([
-//                 {
-//                     field: "code",
-//                     message: "invalid confirmation code"
-//                 },
-//             ]
-//         );
-//     })
-//
-//     it("should return 400 for code expiration", async () => {
-//         mockDate("2098-11-25T12:34:56z")
-//
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: validConfirmationOrRecoveryCode})
-//             .expect(400)
-//
-//         expect(res.body.errorsMessages.length).toBe(1);
-//         expect(res.body.errorsMessages).toEqual([
-//                 {
-//                     field: "code",
-//                     message: "code expired"
-//                 },
-//             ]
-//         );
-//     })
-//
-//     it("should return 204 for correct confirmation code", async () => {
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: validConfirmationOrRecoveryCode})
-//             .expect(204)
-//     })
-//
-//     it("should return 429 for 6th attempt and 400 after waiting 10sec", async () => {
-//         await ioc.get(RateLimitRepository).clearDB();
-//
-//         // attempt #1
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         // attempt #2
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         // attempt #3
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         // attempt #4
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         // attempt #5
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//
-//         // attempt #6
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(429)
-//
-//         const dateInFuture = add(new Date(), {
-//             seconds: 10,
-//         })
-//         mockDate(dateInFuture.toISOString());
-//
-//         // attempt #7 after waiting
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-//             .send({code: "00000"})
-//             .expect(400)
-//     })
-// })
-//
 // describe("resend registration email /registration-email-resending", () => {
 //     connectToTestDBAndClearRepositories();
 //
@@ -564,7 +604,7 @@ describe("register user /registration", () => {
 //             .expect(204)
 //     })
 // })
-//
+
 // describe("refresh token /refresh-token", () => {
 //     connectToTestDBAndClearRepositories();
 //
@@ -624,7 +664,7 @@ describe("register user /registration", () => {
 //             .expect(401)
 //     })
 // })
-//
+
 // describe("logout /logout", () => {
 //     connectToTestDBAndClearRepositories();
 //
@@ -681,7 +721,7 @@ describe("register user /registration", () => {
 //             .expect(204)
 //     })
 // })
-//
+
 // describe("send password recovery code /password-recovery", () => {
 //     connectToTestDBAndClearRepositories();
 //
@@ -781,7 +821,7 @@ describe("register user /registration", () => {
 //         expect(nodemailerTestService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
 //     })
 // })
-//
+
 // describe("confirm password recovery /new-password", () => {
 //     connectToTestDBAndClearRepositories();
 //

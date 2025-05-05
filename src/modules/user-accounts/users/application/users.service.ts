@@ -27,6 +27,12 @@ export class UsersService {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         message: "User with the same login already exists",
+        extensions: [
+          {
+            field: "login",
+            message: "User with the same login already exists",
+          },
+        ],
       });
     }
 
@@ -37,6 +43,12 @@ export class UsersService {
       throw new DomainException({
         code: DomainExceptionCode.BadRequest,
         message: "User with the same email already exists",
+        extensions: [
+          {
+            field: "email",
+            message: "User with the same email already exists",
+          },
+        ],
       });
     }
 
@@ -83,5 +95,50 @@ export class UsersService {
         currentURL,
       })
       .catch(console.error);
+  }
+
+  async confirmUserRegistration(code: string) {
+    const user = await this.usersRepository.findByConfirmationCode(code);
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: "Invalid confirmation code",
+        extensions: [
+          {
+            field: "code",
+            message: "Invalid confirmation code",
+          },
+        ],
+      });
+    }
+
+    if (user.isEmailConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: "User registration already confirmed",
+        extensions: [
+          {
+            field: "code",
+            message: "User already confirmed",
+          },
+        ],
+      });
+    }
+
+    if (user.confirmationCodeExpirationDate < new Date().getTime()) {
+      throw new DomainException({
+        code: DomainExceptionCode.ConfirmationCodeExpired,
+        message: "Confirmation code expired",
+        extensions: [
+          {
+            field: "code",
+            message: "Confirmation code expired",
+          },
+        ],
+      });
+    }
+
+    user.confirmRegistration();
+    await this.usersRepository.save(user);
   }
 }
