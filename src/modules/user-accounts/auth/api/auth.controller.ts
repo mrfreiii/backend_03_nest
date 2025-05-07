@@ -12,6 +12,7 @@ import { SETTINGS } from "../../../../settings";
 import { UsersService } from "../../users/application/users.service";
 import { RegisterUserInputDto } from "./input-dto/register-user.input-dto";
 import { ConfirmUserRegistrationInputDto } from "./input-dto/confirm-user-registration.input-dto";
+import { ResendUserRegistrationEmailInputDto } from "./input-dto/resend-user-registration-email.input-dto";
 
 @Controller(SETTINGS.PATH.AUTH)
 export class AuthController {
@@ -30,5 +31,17 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body() body: ConfirmUserRegistrationInputDto) {
     return this.usersService.confirmUserRegistration(body.code);
+  }
+
+  @Post("registration-email-resending")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async resendRegistrationEmail(
+    @Req() req: Request,
+    @Body() body: ResendUserRegistrationEmailInputDto,
+  ) {
+    return this.usersService.resendRegistrationEmail({
+      email: body.email,
+      currentURL: `${req.protocol + "://" + req.get("host")}`,
+    });
   }
 }

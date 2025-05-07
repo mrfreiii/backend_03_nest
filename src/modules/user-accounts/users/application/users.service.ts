@@ -67,7 +67,7 @@ export class UsersService {
     return user._id.toString();
   }
 
-  async deleteUser(id: string) {
+  async deleteUser(id: string): Promise<void> {
     const user = await this.usersRepository.findOrNotFoundFail(id);
 
     user.makeDeleted();
@@ -81,7 +81,7 @@ export class UsersService {
   }: {
     dto: RegisterUserInputDto;
     currentURL: string;
-  }) {
+  }): Promise<void> {
     const createdUserId = await this.createUser(dto);
     const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
 
@@ -97,7 +97,7 @@ export class UsersService {
       .catch(console.error);
   }
 
-  async confirmUserRegistration(code: string) {
+  async confirmUserRegistration(code: string): Promise<void> {
     const user = await this.usersRepository.findByConfirmationCode(code);
     if (!user) {
       throw new DomainException({
@@ -140,5 +140,51 @@ export class UsersService {
 
     user.confirmRegistration();
     await this.usersRepository.save(user);
+  }
+
+  async resendRegistrationEmail({
+    email,
+    currentURL,
+  }: {
+    email: string;
+    currentURL: string;
+  }): Promise<void> {
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: "User not found",
+        extensions: [
+          {
+            field: "email",
+            message: "User not found",
+          },
+        ],
+      });
+    }
+
+    if (user.isEmailConfirmed) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: "Email already confirmed",
+        extensions: [
+          {
+            field: "email",
+            message: "Email already confirmed",
+          },
+        ],
+      });
+    }
+
+    const confirmationCode = user.setConfirmationCode();
+    await this.usersRepository.save(user);
+
+    this.emailService
+      .sendEmailWithConfirmationCode({
+        email: user.email,
+        confirmationCode,
+        currentURL,
+      })
+      .catch(console.error);
   }
 }
