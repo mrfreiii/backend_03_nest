@@ -187,4 +187,28 @@ export class UsersService {
       })
       .catch(console.error);
   }
+
+  async sendPasswordRecoveryCode({
+    email,
+    currentURL,
+  }: {
+    email: string;
+    currentURL: string;
+  }): Promise<void> {
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user) {
+      return;
+    }
+
+    const recoveryCode = user.setPasswordRecoveryCode();
+    await this.usersRepository.save(user);
+
+    this.emailService
+      .sendEmailWithPasswordRecoveryCode({
+        email: user.email,
+        recoveryCode,
+        currentURL,
+      })
+      .catch(console.error);
+  }
 }

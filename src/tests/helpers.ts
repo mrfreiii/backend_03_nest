@@ -3,6 +3,7 @@ import { App } from "supertest/types";
 import TestAgent from "supertest/lib/agent";
 import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
+import { MailerService } from "@nestjs-modules/mailer";
 
 import { SETTINGS } from "../settings";
 import { AppModule } from "../app.module";
@@ -18,6 +19,7 @@ export let req: InstanceType<typeof TestAgent>;
 // );
 // export const validAuthHeader = `Basic ${encodedUserCredentials}`;
 // export const emailServiceMock = new EmailServiceMock();
+export const emailServiceMock = new EmailServiceMock({} as MailerService);
 
 export const connectToTestDBAndClearRepositories = () => {
   let app: INestApplication<App>;
@@ -39,13 +41,13 @@ export const connectToTestDBAndClearRepositories = () => {
     await req.delete(`${SETTINGS.PATH.TESTING}/all-data`).expect(204);
     // req.set("Authorization", "");
 
-    // nodemailerTestService.sendEmailWithConfirmationCode = jest
-    //   .fn()
-    //   .mockImplementation(() => Promise.resolve());
-    //
-    // nodemailerTestService.sendEmailWithPasswordRecoveryCode = jest
-    //   .fn()
-    //   .mockImplementation(() => Promise.resolve());
+    emailServiceMock.sendEmailWithConfirmationCode = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve());
+
+    emailServiceMock.sendEmailWithPasswordRecoveryCode = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve());
   });
 
   afterAll(async () => {

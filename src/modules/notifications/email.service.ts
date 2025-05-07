@@ -49,4 +49,29 @@ export class EmailService {
       html,
     });
   }
+
+  async sendEmailWithPasswordRecoveryCode({
+    email,
+    recoveryCode,
+    currentURL,
+  }: {
+    email: string;
+    recoveryCode: string;
+    currentURL: string;
+  }) {
+    const link = `${currentURL}/auth/password-recovery?recoveryCode=${recoveryCode}`;
+
+    const html = `
+            <h1>Password recovery</h1>
+            <p>To finish password recovery please follow the link below:
+                <a href=${link}>recovery password</a>
+            </p>
+        `;
+
+    await this.sendEmail({
+      to: email,
+      subject: "Восстановление пароля",
+      html,
+    });
+  }
 }

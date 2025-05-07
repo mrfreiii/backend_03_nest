@@ -69,6 +69,20 @@ export class User {
   @Prop({ type: Number, required: false })
   confirmationCodeExpirationDate: number;
 
+  /**
+   * Password recovery code
+   * @type {string}
+   */
+  @Prop({ type: String, required: false })
+  passwordRecoveryCode: string;
+
+  /**
+   * Password recovery code expiration date
+   * @type {number}
+   */
+  @Prop({ type: Number, required: false })
+  passwordRecoveryCodeExpirationDate: number;
+
   @Prop({ type: NameSchema })
   name: Name;
 
@@ -146,6 +160,17 @@ export class User {
 
   confirmRegistration() {
     this.isEmailConfirmed = true;
+  }
+
+  setPasswordRecoveryCode() {
+    const code = uuidv4();
+
+    this.passwordRecoveryCode = code;
+    this.passwordRecoveryCodeExpirationDate = add(new Date(), {
+      minutes: 2,
+    }).getTime();
+
+    return code;
   }
 
   // /**
