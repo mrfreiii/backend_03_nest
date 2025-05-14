@@ -4,7 +4,7 @@ config();
 export const SETTINGS = {
   PORT: process.env.PORT || 5005,
   PATH: {
-    AUTH: '/auth',
+    AUTH: "/auth",
     USERS: "/users",
     BLOGS: "/blogs",
     POSTS: "/posts",
@@ -17,5 +17,5 @@ export const SETTINGS = {
   //   LOGIN: 'admin',
   //   PASSWORD: 'qwerty',
   // },
-  // JWT_SECRET: 'some secret qwerty',
+  JWT_SECRET: "some secret qwerty",
 };

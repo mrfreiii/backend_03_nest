@@ -9,7 +9,7 @@ export class CryptoService {
     return bcrypt.hash(password, salt);
   }
 
-  // comparePasswords(args: { password: string; hash: string }): Promise<boolean> {
-  //   return bcrypt.compare(args.password, args.hash);
-  // }
+  comparePasswords(args: { password: string; hash: string }): Promise<boolean> {
+    return bcrypt.compare(args.password, args.hash);
+  }
 }

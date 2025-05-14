@@ -47,9 +47,40 @@ export class UsersRepository {
     return this.UserModel.findOne({ email });
   }
 
+  findByLoginOrEmail({
+    login,
+    email,
+  }: {
+    login: string;
+    email: string;
+  }): Promise<UserDocument | null> {
+    return this.UserModel.findOne({
+      $or: [
+        {
+          email: {
+            $regex: email,
+            $options: "i",
+          },
+        },
+        {
+          login: {
+            $regex: login,
+            $options: "i",
+          },
+        },
+      ],
+    });
+  }
+
   findByConfirmationCode(
     confirmationCode: string,
   ): Promise<UserDocument | null> {
     return this.UserModel.findOne({ confirmationCode });
+  }
+
+  findByPasswordRecoveryCode(
+    passwordRecoveryCode: string,
+  ): Promise<UserDocument | null> {
+    return this.UserModel.findOne({ passwordRecoveryCode });
   }
 }

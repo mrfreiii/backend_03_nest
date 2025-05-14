@@ -29,3 +29,25 @@ export const createTestUsers = async ({
 
   return result;
 };
+
+export const getUsersJwtTokens = async (
+  users: UserViewDto[],
+): Promise<string[]> => {
+  const result: string[] = [];
+
+  for (let i = 0; i < users.length; i++) {
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: users[i].login,
+      password: DEFAULT_USER_PASSWORD,
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(authData)
+      .expect(200);
+
+    result.push(res.body.accessToken);
+  }
+
+  return result;
+};

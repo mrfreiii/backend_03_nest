@@ -9,6 +9,7 @@ import { UsersRepository } from "../infrastructure/users.repository";
 import { DomainException } from "../../../../core/exceptions/domain-exceptions";
 import { RegisterUserInputDto } from "../../auth/api/input-dto/register-user.input-dto";
 import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
+import { UpdatePasswordInputDto } from "../../auth/api/input-dto/update-password.input-dto";
 
 @Injectable()
 export class UsersService {
@@ -210,5 +211,44 @@ export class UsersService {
         currentURL,
       })
       .catch(console.error);
+  }
+
+  async updatePassword(dto: UpdatePasswordInputDto): Promise<void> {
+    const user = await this.usersRepository.findByPasswordRecoveryCode(
+      dto.recoveryCode,
+    );
+    if (!user) {
+      throw new DomainException({
+        code: DomainExceptionCode.BadRequest,
+        message: "Invalid recovery code",
+        extensions: [
+          {
+            field: "recoveryCode",
+            message: "Invalid recovery code",
+          },
+        ],
+      });
+    }
+
+    if (user.passwordRecoveryCodeExpirationDate < new Date().getTime()) {
+      throw new DomainException({
+        code: DomainExceptionCode.ConfirmationCodeExpired,
+        message: "Recovery code expired",
+        extensions: [
+          {
+            field: "recoveryCode",
+            message: "Code expired",
+          },
+        ],
+      });
+    }
+
+    const passwordHash = await this.cryptoService.createPasswordHash(
+      dto.newPassword,
+    );
+
+    user.updatePassword(passwordHash);
+
+    await this.usersRepository.save(user);
   }
 }

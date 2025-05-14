@@ -1,5 +1,5 @@
-import { SETTINGS } from "../../settings";
-import { DEFAULT_USER_EMAIL, registerTestUser } from "./helpers";
+import { add } from "date-fns";
+
 import {
   connectToTestDBAndClearRepositories,
   emailServiceMock,
@@ -7,7 +7,11 @@ import {
   RealDate,
   req,
 } from "../helpers";
+import { SETTINGS } from "../../settings";
+import { DEFAULT_USER_EMAIL, registerTestUser } from "./helpers";
 import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input-dto/register-user.input-dto";
+import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
 
 // import {
 //     req,
@@ -527,197 +531,345 @@ describe("send password recovery code /password-recovery", () => {
   // });
 });
 
-// describe("login user /login", () => {
-//     connectToTestDBAndClearRepositories();
-//
-//     const userPassword = "1234567890";
-//     let createdUser: UserViewType;
-//
-//     beforeAll(async () => {
-//         createdUser = (await createTestUsers({password: userPassword}))[0];
-//     })
-//
-//     afterEach(() => {
-//         global.Date = RealDate;
-//     })
-//
-//     it("should return 400 for loginOrEmail and password are not string", async () => {
-//         const authData: { loginOrEmail: null, password: null } = {
-//             loginOrEmail: null,
-//             password: null,
-//         }
-//
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(400)
-//
-//         expect(res.body.errorsMessages.length).toBe(2);
-//         expect(res.body.errorsMessages).toEqual([
-//                 {
-//                     field: "loginOrEmail",
-//                     message: "value must be a string"
-//                 },
-//                 {
-//                     field: "password",
-//                     message: "value must be a string"
-//                 },
-//             ]
-//         );
-//     })
-//
-//     it("should login user by login", async () => {
-//         const authData: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: createdUser.login,
-//             password: userPassword,
-//         }
-//
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(200)
-//         expect(res.body).toEqual({accessToken: expect.any(String)})
-//     })
-//
-//     it("should login user by email", async () => {
-//         const authData: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: createdUser.email,
-//             password: userPassword,
-//         }
-//
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(200)
-//         expect(res.body).toEqual({accessToken: expect.any(String)})
-//     })
-//
-//     it("should return 401 for invalid password", async () => {
-//         const authData: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: createdUser.email,
-//             password: "invalid password",
-//         }
-//
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(401)
-//     })
-//
-//     it("should return 401 for non existent user", async () => {
-//         const authData: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: "noExist",
-//             password: userPassword,
-//         }
-//
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(401)
-//     })
-//
-//     it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
-//         await ioc.get(RateLimitRepository).clearDB();
-//
-//         const nonExistentUser: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: "noExist",
-//             password: userPassword,
-//         }
-//
-//         // attempt #1
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//
-//         // attempt #2
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//
-//         // attempt #3
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//
-//         // attempt #4
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//
-//         // attempt #5
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//
-//         // attempt #6
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(429)
-//
-//         const dateInFuture = add(new Date(), {
-//             seconds: 10,
-//         })
-//         mockDate(dateInFuture.toISOString())
-//
-//         // attempt #7
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(nonExistentUser)
-//             .expect(401)
-//     })
-// })
+describe("confirm password recovery /new-password", () => {
+  connectToTestDBAndClearRepositories();
 
-// describe("check user /me", () => {
-//     connectToTestDBAndClearRepositories();
-//
-//     it("should return 401 for request without auth header", async () => {
-//         const res = await req
-//             .get(`${SETTINGS.PATH.AUTH}/me`)
-//             .expect(401)
-//
-//         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
-//     })
-//
-//     it("should return 401 for invalid auth header", async () => {
-//         const res = await req
-//             .set("Authorization", "Basic 1234567890")
-//             .get(`${SETTINGS.PATH.AUTH}/me`)
-//             .expect(401)
-//
-//         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.InvalidHeader);
-//     })
-//
-//     it("should return 401 for invalid jwt token", async () => {
-//         const res = await req
-//             .set("Authorization", "Bearer 1234567890")
-//             .get(`${SETTINGS.PATH.AUTH}/me`)
-//             .expect(401)
-//
-//         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.InvalidJwtToken);
-//     })
-//
-//     it("should return user info", async () => {
-//         const createdUser = (await createTestUsers({}))[0];
-//         const userToken = (await getUsersJwtTokens([createdUser]))[0];
-//
-//         const res = await req
-//             .set("Authorization", `Bearer ${userToken}`)
-//             .get(`${SETTINGS.PATH.AUTH}/me`)
-//             .expect(200)
-//
-//         expect(res.body).toEqual({
-//             email: createdUser.email,
-//             login: createdUser.login,
-//             userId: createdUser.id,
-//         });
-//     })
-// })
+  const userEmail = "user1@email.com";
+
+  beforeAll(async () => {
+    await registerTestUser([userEmail]);
+
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: userEmail })
+      .expect(204);
+  });
+
+  // beforeEach(async () => {
+  //   await ioc.get(RateLimitRepository).clearDB();
+  // });
+
+  afterEach(() => {
+    global.Date = RealDate;
+  });
+
+  it("should return 400 for invalid newPassword and recoveryCode format", async () => {
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/new-password`)
+      .send({ newPassword: 123, recoveryCode: 123 })
+      .expect(400);
+
+    expect(res.body.errorsMessages.length).toBe(2);
+    expect(res.body.errorsMessages).toEqual([
+      {
+        field: "newPassword",
+        message:
+          "newPassword must be longer than or equal to 6 and shorter than or equal to 20 characters; Received value: 123",
+      },
+      {
+        field: "recoveryCode",
+        message: "recoveryCode must be a string; Received value: 123",
+      },
+    ]);
+  });
+
+  it("should return 400 for expiration of recovery code", async () => {
+    const dateInFuture = add(new Date(), {
+      minutes: 10,
+    });
+    mockDate(dateInFuture.toISOString());
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/new-password`)
+      .send({
+        newPassword: "1234567",
+        recoveryCode: validConfirmationOrRecoveryCode,
+      })
+      .expect(400);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "recoveryCode",
+      message: "Code expired",
+    });
+  });
+
+  it("should confirm password recovery", async () => {
+    const newPassword = "999988887777";
+
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/new-password`)
+      .send({
+        newPassword: newPassword,
+        recoveryCode: validConfirmationOrRecoveryCode,
+      })
+      .expect(204);
+
+    // TODO: проверить после реализации эндпоинта login
+    // const authData: { loginOrEmail: string; password: string } = {
+    //   loginOrEmail: userEmail,
+    //   password: newPassword,
+    // };
+    // await req.post(`${SETTINGS.PATH.AUTH}/login`).send(authData).expect(200);
+  });
+
+  // it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
+  //   // attempt #1
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  //
+  //   // attempt #2
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  //
+  //   // attempt #3
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  //
+  //   // attempt #4
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  //
+  //   // attempt #5
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  //
+  //   // attempt #6
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(429);
+  //
+  //   const dateInFuture = add(new Date(), {
+  //     seconds: 10,
+  //   });
+  //   mockDate(dateInFuture.toISOString());
+  //
+  //   // attempt #7
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/new-password`)
+  //     .send({ newPassword: "qwerty", recoveryCode: "12345" })
+  //     .expect(400);
+  // });
+});
+
+describe("login user /login", () => {
+  connectToTestDBAndClearRepositories();
+
+  const userPassword = "1234567890";
+  let createdUser: UserViewDto;
+
+  beforeAll(async () => {
+    createdUser = (await createTestUsers({ password: userPassword }))[0];
+    console.log("createdUser");
+    console.log(createdUser);
+  });
+
+  afterEach(() => {
+    global.Date = RealDate;
+  });
+
+  // it("should return 400 for loginOrEmail and password are not string", async () => {
+  //   const authData: { loginOrEmail: null; password: null } = {
+  //     loginOrEmail: null,
+  //     password: null,
+  //   };
+  //
+  //   const res = await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(authData)
+  //     .expect(400);
+  //
+  //   expect(res.body.errorsMessages.length).toBe(2);
+  //   expect(res.body.errorsMessages).toEqual([
+  //     {
+  //       field: "loginOrEmail",
+  //       message: "value must be a string",
+  //     },
+  //     {
+  //       field: "password",
+  //       message: "value must be a string",
+  //     },
+  //   ]);
+  // });
+
+  it("should login user by login", async () => {
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: createdUser.login,
+      password: userPassword,
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(authData)
+      .expect(200);
+    expect(res.body).toEqual({ accessToken: expect.any(String) });
+  });
+
+  it("should login user by email", async () => {
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: createdUser.email,
+      password: userPassword,
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(authData)
+      .expect(200);
+    expect(res.body).toEqual({ accessToken: expect.any(String) });
+  });
+
+  it("should return 401 for invalid password", async () => {
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: createdUser.email,
+      password: "invalid password",
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(authData)
+      .expect(401);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "",
+      message: "Invalid username or password",
+    });
+  });
+
+  it("should return 401 for non existent user", async () => {
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: "noExist",
+      password: userPassword,
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(authData)
+      .expect(401);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "",
+      message: "Invalid username or password",
+    });
+  });
+
+  // it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
+  //   await ioc.get(RateLimitRepository).clearDB();
+  //
+  //   const nonExistentUser: { loginOrEmail: string; password: string } = {
+  //     loginOrEmail: "noExist",
+  //     password: userPassword,
+  //   };
+  //
+  //   // attempt #1
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  //
+  //   // attempt #2
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  //
+  //   // attempt #3
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  //
+  //   // attempt #4
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  //
+  //   // attempt #5
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  //
+  //   // attempt #6
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(429);
+  //
+  //   const dateInFuture = add(new Date(), {
+  //     seconds: 10,
+  //   });
+  //   mockDate(dateInFuture.toISOString());
+  //
+  //   // attempt #7
+  //   await req
+  //     .post(`${SETTINGS.PATH.AUTH}/login`)
+  //     .send(nonExistentUser)
+  //     .expect(401);
+  // });
+});
+
+describe("check user /me", () => {
+  connectToTestDBAndClearRepositories();
+
+  let createdUser: UserViewDto;
+  let userToken: string;
+
+  beforeAll(async () => {
+    createdUser = (await createTestUsers({}))[0];
+    userToken = (await getUsersJwtTokens([createdUser]))[0];
+  });
+
+  it("should return 401 for request without auth header", async () => {
+    await req.get(`${SETTINGS.PATH.AUTH}/me`).expect(401);
+  });
+
+  it("should return 401 for invalid auth header", async () => {
+    await req
+      .get(`${SETTINGS.PATH.AUTH}/me`)
+      .set("Authorization", "Basic 1234567890")
+      .expect(401);
+  });
+
+  it("should return 401 for invalid jwt token", async () => {
+    await req
+      .get(`${SETTINGS.PATH.AUTH}/me`)
+      .set("Authorization", "Bearer 1234567890")
+      .expect(401);
+  });
+
+  it("should return user info", async () => {
+    const res = await req
+      .get(`${SETTINGS.PATH.AUTH}/me`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(200);
+
+    expect(res.body).toEqual({
+      email: createdUser.email,
+      login: createdUser.login,
+      userId: createdUser.id,
+    });
+  });
+
+  it("should return 401 for expired token", async () => {
+    mockDate("2098-11-25T12:34:56z");
+
+    await req
+      .get(`${SETTINGS.PATH.AUTH}/me`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(401);
+  });
+});
 
 // describe("refresh token /refresh-token", () => {
 //     connectToTestDBAndClearRepositories();
@@ -833,150 +985,5 @@ describe("send password recovery code /password-recovery", () => {
 //             .set("cookie", cookieWithValidRefreshToken)
 //             .post(`${SETTINGS.PATH.AUTH}/logout`)
 //             .expect(204)
-//     })
-// })
-
-// describe("confirm password recovery /new-password", () => {
-//     connectToTestDBAndClearRepositories();
-//
-//     const userEmail = "user1@email.com";
-//
-//     beforeAll(async () => {
-//         await registerTestUser([userEmail]);
-//
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-//             .send({email: userEmail})
-//             .expect(204)
-//     })
-//
-//     beforeEach(async () => {
-//         await ioc.get(RateLimitRepository).clearDB();
-//     })
-//
-//     afterEach(() => {
-//         global.Date = RealDate;
-//     })
-//
-//     it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
-//         // attempt #1
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//
-//         // attempt #2
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//
-//         // attempt #3
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//
-//         // attempt #4
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//
-//         // attempt #5
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//
-//         // attempt #6
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(429)
-//
-//         const dateInFuture = add(new Date(), {
-//             seconds: 10,
-//         })
-//         mockDate(dateInFuture.toISOString());
-//
-//         // attempt #7
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "qwerty", recoveryCode: "12345"})
-//             .expect(400)
-//     })
-//
-//     it("should return 400 for invalid newPassword and recoveryCode format", async () => {
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: 123, recoveryCode: 123})
-//             .expect(400)
-//
-//         expect(res.body.errorsMessages.length).toBe(2);
-//         expect(res.body.errorsMessages).toEqual([
-//                 {
-//                     field: "newPassword",
-//                     message: "value must be a string"
-//                 },
-//                 {
-//                     field: "recoveryCode",
-//                     message: "value must be a string"
-//                 },
-//             ]
-//         );
-//     })
-//
-//     it("should return 400 for invalid newPassword format", async () => {
-//         const res = await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "123", recoveryCode: "123"})
-//             .expect(400)
-//
-//         expect(res.body.errorsMessages.length).toBe(1);
-//         expect(res.body.errorsMessages).toEqual([
-//                 {
-//                     field: "newPassword",
-//                     message: "length must be: min 6, max 20"
-//                 },
-//             ]
-//         );
-//     })
-//
-//     it("should return 400 for invalid recovery code", async () => {
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "1234567", recoveryCode: "123"})
-//             .expect(400)
-//     })
-//
-//     it("should return 400 for expiration of recovery code", async () => {
-//         const dateInFuture = add(new Date(), {
-//             minutes: 10,
-//         })
-//         mockDate(dateInFuture.toISOString());
-//
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: "1234567", recoveryCode: validConfirmationOrRecoveryCode})
-//             .expect(400)
-//     })
-//
-//     it("should confirm password recovery", async () => {
-//         const newPassword = "999988887777";
-//
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/new-password`)
-//             .send({newPassword: newPassword, recoveryCode: validConfirmationOrRecoveryCode})
-//             .expect(204)
-//
-//         const authData: { loginOrEmail: string, password: string } = {
-//             loginOrEmail: userEmail,
-//             password: newPassword,
-//         }
-//         await req
-//             .post(`${SETTINGS.PATH.AUTH}/login`)
-//             .send(authData)
-//             .expect(200)
 //     })
 // })

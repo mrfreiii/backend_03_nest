@@ -173,18 +173,9 @@ export class User {
     return code;
   }
 
-  // /**
-  //  * Updates the user instance with new data
-  //  * Resets email confirmation if email is updated
-  //  * @param {UpdateUserDto} dto - The data transfer object for user updates
-  //  * DDD сontinue: инкапсуляция (вызываем методы, которые меняют состояние\св-ва) объектов согласно правилам этого объекта
-  //  */
-  // update(dto: UpdateUserDto) {
-  //   if (dto.email !== this.email) {
-  //     this.isEmailConfirmed = false;
-  //     this.email = dto.email;
-  //   }
-  // }
+  updatePassword(newPasswordHash: string) {
+    this.passwordHash = newPasswordHash;
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
