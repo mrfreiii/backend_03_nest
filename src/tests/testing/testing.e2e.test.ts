@@ -1,6 +1,10 @@
 import { SETTINGS } from "../../settings";
 import { createTestUsers } from "../users/helpers";
-import { connectToTestDBAndClearRepositories, req } from "../helpers";
+import {
+  connectToTestDBAndClearRepositories,
+  req,
+  testBasicAuthHeader,
+} from "../helpers";
 // import { createTestBlogs } from "../blogs/helpers";
 // import { createTestPosts } from "../posts/helpers";
 
@@ -11,7 +15,11 @@ describe("delete all data", () => {
   it("should get default users", async () => {
     const user = (await createTestUsers({}))[0];
 
-    const userRes = await req.get(SETTINGS.PATH.USERS).expect(200);
+    const userRes = await req
+      .get(SETTINGS.PATH.USERS)
+      .set("Authorization", testBasicAuthHeader)
+      .expect(200);
+
     expect(userRes.body.items).toEqual([user]);
     // const createdBlog = (await createTestBlogs())[0];
     // const createdPost = (await createTestPosts({ blogId: createdBlog.id }))[0];
@@ -29,7 +37,11 @@ describe("delete all data", () => {
   it("should delete all data", async () => {
     await req.delete(`${SETTINGS.PATH.TESTING}/all-data`).expect(204);
 
-    const userRes = await req.get(SETTINGS.PATH.USERS).expect(200);
+    const userRes = await req
+      .get(SETTINGS.PATH.USERS)
+      .set("Authorization", testBasicAuthHeader)
+      .expect(200);
+
     expect(userRes.body.items.length).toBe(0);
     // const blogsRes = await req.get(SETTINGS.PATH.BLOGS).expect(200);
     // expect(blogsRes.body.items.length).toBe(0);

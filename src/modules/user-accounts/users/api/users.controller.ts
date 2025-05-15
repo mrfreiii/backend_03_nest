@@ -8,8 +8,9 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
-import { ApiParam } from "@nestjs/swagger";
+import { ApiBasicAuth, ApiParam } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
 import { UserViewDto } from "./view-dto/users.view-dto";
@@ -18,8 +19,11 @@ import { CreateUserInputDto } from "./input-dto/users.input-dto";
 import { PaginatedViewDto } from "../../../../core/dto/base.paginated.view-dto";
 import { GetUsersQueryParams } from "./input-dto/get-users-query-params.input-dto";
 import { UsersQueryRepository } from "../infrastructure/query/users.query-repository";
+import { BasicAuthGuard } from "../../guards/basic/basic-auth.guard";
 
 @Controller(SETTINGS.PATH.USERS)
+@UseGuards(BasicAuthGuard)
+@ApiBasicAuth("basicAuth")
 export class UsersController {
   constructor(
     private usersQueryRepository: UsersQueryRepository,

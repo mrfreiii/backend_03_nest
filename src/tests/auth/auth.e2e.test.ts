@@ -604,12 +604,11 @@ describe("confirm password recovery /new-password", () => {
       })
       .expect(204);
 
-    // TODO: проверить после реализации эндпоинта login
-    // const authData: { loginOrEmail: string; password: string } = {
-    //   loginOrEmail: userEmail,
-    //   password: newPassword,
-    // };
-    // await req.post(`${SETTINGS.PATH.AUTH}/login`).send(authData).expect(200);
+    const authData: { loginOrEmail: string; password: string } = {
+      loginOrEmail: userEmail,
+      password: newPassword,
+    };
+    await req.post(`${SETTINGS.PATH.AUTH}/login`).send(authData).expect(200);
   });
 
   // it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
@@ -670,8 +669,6 @@ describe("login user /login", () => {
 
   beforeAll(async () => {
     createdUser = (await createTestUsers({ password: userPassword }))[0];
-    console.log("createdUser");
-    console.log(createdUser);
   });
 
   afterEach(() => {

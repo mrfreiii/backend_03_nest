@@ -1,5 +1,5 @@
-import { req } from "../helpers";
 import { SETTINGS } from "../../settings";
+import { req, testBasicAuthHeader } from "../helpers";
 import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
 import { CreateUserInputDto } from "../../modules/user-accounts/users/api/input-dto/users.input-dto";
 
@@ -23,7 +23,11 @@ export const createTestUsers = async ({
       email: `email${uniqueId}@test.com`,
     };
 
-    const res = await req.post(SETTINGS.PATH.USERS).send(user).expect(201);
+    const res = await req
+      .post(SETTINGS.PATH.USERS)
+      .set("Authorization", testBasicAuthHeader)
+      .send(user)
+      .expect(201);
     result.push(res.body);
   }
 

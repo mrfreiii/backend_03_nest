@@ -5,7 +5,6 @@ import { JwtModule } from "@nestjs/jwt";
 import { User, UserSchema } from "./users/domain/user.entity";
 import { AuthController } from "./auth/api/auth.controller";
 import { UsersController } from "./users/api/users.controller";
-import { SecurityDevicesController } from "./users/api/security-devices.controller";
 import { UsersService } from "./users/application/users.service";
 import { CryptoService } from "./users/application/crypto.service";
 import { UsersExternalService } from "./users/application/users.external-service";
@@ -28,7 +27,7 @@ import { AuthQueryRepository } from "./auth/infrastructure/query/auth.query-repo
       signOptions: { expiresIn: "5m" },
     }),
   ],
-  controllers: [UsersController, AuthController, SecurityDevicesController],
+  controllers: [UsersController, AuthController],
   providers: [
     AuthService,
     UsersService,

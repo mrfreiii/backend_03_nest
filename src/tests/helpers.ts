@@ -13,12 +13,12 @@ import { EmailService } from "../modules/notifications/email.service";
 
 export let req: InstanceType<typeof TestAgent>;
 
-// const userCredentials = `${SETTINGS.CREDENTIALS.LOGIN}:${SETTINGS.CREDENTIALS.PASSWORD}`;
-// const encodedUserCredentials = Buffer.from(userCredentials, 'utf8').toString(
-//   'base64',
-// );
-// export const validAuthHeader = `Basic ${encodedUserCredentials}`;
-// export const emailServiceMock = new EmailServiceMock();
+const userCredentials = `${SETTINGS.CREDENTIALS.LOGIN}:${SETTINGS.CREDENTIALS.PASSWORD}`;
+const encodedUserCredentials = Buffer.from(userCredentials, "utf8").toString(
+  "base64",
+);
+export const testBasicAuthHeader = `Basic ${encodedUserCredentials}`;
+
 export const emailServiceMock = new EmailServiceMock({} as MailerService);
 
 export const connectToTestDBAndClearRepositories = () => {

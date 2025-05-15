@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 import { User, UserDocument, UserModelType } from "../domain/user.entity";
 import { DomainException } from "../../../../core/exceptions/domain-exceptions";
@@ -17,7 +17,10 @@ export class UsersRepository {
   async findById(id: string): Promise<UserDocument | null> {
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
     if (!isObjectId) {
-      throw new NotFoundException("user not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "User not found",
+      });
     }
 
     return this.UserModel.findOne({

@@ -1,4 +1,4 @@
-export enum UsersSortBy {
+export enum UsersSort {
   CreatedAt = "createdAt",
   Login = "login",
   Email = "email",

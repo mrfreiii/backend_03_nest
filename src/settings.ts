@@ -13,9 +13,9 @@ export const SETTINGS = {
     // RATE_LIMIT: '/rate-limit',
     // SECURITY: '/security',
   },
-  // CREDENTIALS: {
-  //   LOGIN: 'admin',
-  //   PASSWORD: 'qwerty',
-  // },
+  CREDENTIALS: {
+    LOGIN: "admin",
+    PASSWORD: "qwerty",
+  },
   JWT_SECRET: "some secret qwerty",
 };
