@@ -61,6 +61,8 @@ export class PostsController {
     return this.postsQueryRepository.getByIdOrNotFoundFail(id);
   }
 
+  @UseGuards(BasicAuthGuard)
+  @ApiBasicAuth("basicAuth")
   @Put(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
@@ -72,6 +74,8 @@ export class PostsController {
     return this.postsQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
+  @UseGuards(BasicAuthGuard)
+  @ApiBasicAuth("basicAuth")
   @ApiParam({ name: "id" })
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)

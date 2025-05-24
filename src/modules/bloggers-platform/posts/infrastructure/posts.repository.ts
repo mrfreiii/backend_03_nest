@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 import { Post, PostDocument, PostModelType } from "../domain/post.entity";
+import { DomainException } from "../../../../core/exceptions/domain-exceptions";
+import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class PostsRepository {
@@ -15,7 +17,16 @@ export class PostsRepository {
   async findById(id: string): Promise<PostDocument | null> {
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
     if (!isObjectId) {
-      throw new NotFoundException("post not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Post not found",
+        extensions: [
+          {
+            field: "",
+            message: "Post not found",
+          },
+        ],
+      });
     }
 
     return this.PostModel.findOne({
@@ -28,8 +39,16 @@ export class PostsRepository {
     const post = await this.findById(id);
 
     if (!post) {
-      //TODO: replace with domain exception
-      throw new NotFoundException("post not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Post not found",
+        extensions: [
+          {
+            field: "",
+            message: "Post not found",
+          },
+        ],
+      });
     }
 
     return post;
