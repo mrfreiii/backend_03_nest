@@ -6,9 +6,10 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
@@ -82,10 +83,20 @@ export class AuthController {
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  loginUser(@ExtractUserFromRequest() user: UserContextDto): {
+  loginUser(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Res({ passthrough: true }) response: Response,
+  ): {
     accessToken: string;
   } {
-    return this.authService.login(user.id);
+    const result = this.authService.login(user.id);
+
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return { accessToken: result.accessToken };
   }
 
   @ApiBearerAuth()

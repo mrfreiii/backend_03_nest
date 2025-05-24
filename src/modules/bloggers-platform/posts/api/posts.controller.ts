@@ -9,8 +9,9 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from "@nestjs/common";
-import { ApiParam } from "@nestjs/swagger";
+import { ApiBasicAuth, ApiParam } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
 import { PostsService } from "../application/posts.service";
@@ -27,6 +28,7 @@ import { CommentViewDto } from "../../comments/api/view-dto/comments.view-dto";
 import { CommentsService } from "../../comments/application/comments.service";
 import { CommentsQueryRepository } from "../../comments/infrastructure/query/comments.query-repository";
 import { GetCommentsQueryParams } from "../../comments/api/input-dto/get-comments-query-params.input-dto";
+import { BasicAuthGuard } from "../../../user-accounts/guards/basic/basic-auth.guard";
 
 @Controller(SETTINGS.PATH.POSTS)
 export class PostsController {
@@ -44,6 +46,8 @@ export class PostsController {
     return this.postsQueryRepository.getAll({ query });
   }
 
+  @UseGuards(BasicAuthGuard)
+  @ApiBasicAuth("basicAuth")
   @Post()
   async createPost(@Body() body: CreatePostInputDto): Promise<PostViewDto> {
     const postId = await this.postsService.createPost(body);

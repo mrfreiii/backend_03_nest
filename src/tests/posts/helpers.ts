@@ -1,4 +1,4 @@
-import { req } from "../helpers";
+import { req, testBasicAuthHeader } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { PostViewDto } from "../../modules/bloggers-platform/posts/api/view-dto/posts.view-dto";
 import { CreatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/posts.input-dto";
@@ -20,7 +20,11 @@ export const createTestPosts = async ({
       blogId,
     };
 
-    const res = await req.post(SETTINGS.PATH.POSTS).send(post).expect(201);
+    const res = await req
+      .post(SETTINGS.PATH.POSTS)
+      .set("Authorization", testBasicAuthHeader)
+      .send(post)
+      .expect(201);
     result.push(res.body);
   }
 

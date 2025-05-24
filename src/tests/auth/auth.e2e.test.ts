@@ -709,7 +709,13 @@ describe("login user /login", () => {
       .post(`${SETTINGS.PATH.AUTH}/login`)
       .send(authData)
       .expect(200);
+
+    const refreshToken = (res.header["set-cookie"] as unknown as Array<string>)
+      ?.find((header) => header.startsWith("refreshToken="))
+      ?.split("=")[1];
+
     expect(res.body).toEqual({ accessToken: expect.any(String) });
+    expect(refreshToken).toStrictEqual(expect.any(String));
   });
 
   it("should login user by email", async () => {

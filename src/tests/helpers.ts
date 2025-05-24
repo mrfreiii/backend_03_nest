@@ -1,3 +1,4 @@
+import { config } from "dotenv";
 import request from "supertest";
 import { App } from "supertest/types";
 import TestAgent from "supertest/lib/agent";
@@ -11,9 +12,11 @@ import { appSetup } from "../setup/app.setup";
 import { EmailServiceMock } from "./mock/email-service.mock";
 import { EmailService } from "../modules/notifications/email.service";
 
+config();
+
 export let req: InstanceType<typeof TestAgent>;
 
-const userCredentials = `${SETTINGS.CREDENTIALS.LOGIN}:${SETTINGS.CREDENTIALS.PASSWORD}`;
+const userCredentials = `${process.env?.BASIC_AUTH_LOGIN}:${process.env?.BASIC_AUTH_PASSWORD}`;
 const encodedUserCredentials = Buffer.from(userCredentials, "utf8").toString(
   "base64",
 );

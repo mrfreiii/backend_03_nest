@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { Blog, BlogModelType } from "../../domain/blog.entity";
 import { BlogExternalDto } from "./external-dto/blogs.external-dto";
+import { DomainException } from "../../../../../core/exceptions/domain-exceptions";
+import { DomainExceptionCode } from "../../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class BlogsExternalQueryRepository {
@@ -12,7 +14,16 @@ export class BlogsExternalQueryRepository {
   async getByIdOrNotFoundFail(id: string): Promise<BlogExternalDto> {
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
     if (!isObjectId) {
-      throw new NotFoundException("blog not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Blog not found",
+        extensions: [
+          {
+            field: "",
+            message: "Blog not found",
+          },
+        ],
+      });
     }
 
     const blog = await this.BlogModel.findOne({
@@ -21,7 +32,16 @@ export class BlogsExternalQueryRepository {
     });
 
     if (!blog) {
-      throw new NotFoundException("blog not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Blog not found",
+        extensions: [
+          {
+            field: "",
+            message: "Blog not found",
+          },
+        ],
+      });
     }
 
     return BlogExternalDto.mapToView(blog);

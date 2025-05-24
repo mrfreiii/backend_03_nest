@@ -1,9 +1,13 @@
 import { Strategy } from "passport-local";
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
+import { validate } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 import { UserContextDto } from "../dto/user-context.dto";
+import { LoginUserInputDto } from "../../auth/api/input-dto/login -user.input-dto";
 import { AuthService } from "../../auth/application/auth.service";
+import { throwFormattedErrors } from "../../../../setup/pipes.setup";
 import { DomainException } from "../../../../core/exceptions/domain-exceptions";
 import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
 
@@ -18,6 +22,16 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     loginOrEmail: string,
     password: string,
   ): Promise<UserContextDto> {
+    const instance = plainToInstance(LoginUserInputDto, {
+      loginOrEmail,
+      password,
+    });
+
+    const errors = await validate(instance);
+
+    if (errors.length > 0) {
+      throwFormattedErrors(errors);
+    }
     // if (typeof loginOrEmail !== "string") {
     //   throw new DomainException({
     //     code: DomainExceptionCode.Unauthorized,

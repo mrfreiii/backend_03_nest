@@ -10,7 +10,7 @@ import {
 } from "../core/exceptions/domain-exceptions";
 import { DomainExceptionCode } from "../core/exceptions/domain-exception-codes";
 
-export const errorFormatter = (
+export const throwFormattedErrors = (
   errors: ValidationError[],
   errorMessage?: any,
 ): Extension[] => {
@@ -18,7 +18,7 @@ export const errorFormatter = (
 
   for (const error of errors) {
     if (!error.constraints && error.children?.length) {
-      errorFormatter(error.children, errorsForResponse);
+      throwFormattedErrors(error.children, errorsForResponse);
     } else if (error.constraints) {
       const constrainKeys = Object.keys(error.constraints);
 
@@ -33,7 +33,11 @@ export const errorFormatter = (
     }
   }
 
-  return errorsForResponse;
+  throw new DomainException({
+    message: "Validation failed",
+    code: DomainExceptionCode.ValidationError,
+    extensions: errorsForResponse,
+  });
 };
 
 export function pipesSetup(app: INestApplication) {
@@ -43,13 +47,7 @@ export function pipesSetup(app: INestApplication) {
       whitelist: true,
       stopAtFirstError: true,
       exceptionFactory: (errors) => {
-        const formattedErrors = errorFormatter(errors);
-
-        throw new DomainException({
-          code: DomainExceptionCode.ValidationError,
-          message: "Validation failed",
-          extensions: formattedErrors,
-        });
+        throwFormattedErrors(errors);
       },
     }),
   );
