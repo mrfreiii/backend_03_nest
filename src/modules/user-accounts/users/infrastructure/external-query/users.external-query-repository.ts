@@ -1,8 +1,10 @@
 import { InjectModel } from "@nestjs/mongoose";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 import { User, UserModelType } from "../../domain/user.entity";
 import { UserExternalDto } from "./external-dto/users.external-dto";
+import { DomainException } from "../../../../../core/exceptions/domain-exceptions";
+import { DomainExceptionCode } from "../../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class UsersExternalQueryRepository {
@@ -18,7 +20,15 @@ export class UsersExternalQueryRepository {
     });
 
     if (!user) {
-      throw new NotFoundException("user not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "User not found",
+        extensions: [
+          {
+            field: "",
+            message: "User not found",
+          },],
+      });
     }
 
     return UserExternalDto.mapToView(user);

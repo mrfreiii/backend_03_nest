@@ -13,21 +13,6 @@ import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
 
-// import {
-//     req,
-//     connectToTestDBAndClearRepositories,
-//     RealDate,
-//     mockDate,
-//     nodemailerTestService,
-// } from "../helpers";
-// import { SETTINGS } from "../../settings";
-// import { registerTestUser } from "./helpers";
-// import { ioc } from "../../composition-root";
-// import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
-// import { UserViewType } from "../../repositories/usersRepositories/types";
-// import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
-// import { RateLimitRepository } from "../../repositories/rateLimitsRepositories";
-//
 const validConfirmationOrRecoveryCode = "999888777";
 jest.mock("uuid", () => ({
   v4: () => {

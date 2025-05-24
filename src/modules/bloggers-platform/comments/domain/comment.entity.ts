@@ -44,6 +44,13 @@ export class Comment {
   createdAt: Date;
   updatedAt: Date;
 
+  /**
+   * Deletion timestamp, nullable, if date exist, means entity soft deleted
+   * @type {Date | null}
+   */
+  @Prop({ type: Date, default: null, nullable: true })
+  deletedAt: Date | null;
+
   @Prop({ type: LikesInfoSchema })
   likesInfo: LikesInfo;
 
@@ -65,6 +72,17 @@ export class Comment {
     };
 
     return comment as CommentDocument;
+  }
+
+  updateContent(content: string) {
+    this.content = content;
+  }
+
+  makeDeleted() {
+    if (this.deletedAt !== null) {
+      throw new Error("Entity already deleted");
+    }
+    this.deletedAt = new Date();
   }
 }
 

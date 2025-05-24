@@ -11,7 +11,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBasicAuth, ApiParam } from "@nestjs/swagger";
+import { ApiBasicAuth, ApiBearerAuth, ApiParam } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
 import { PostsService } from "../application/posts.service";
@@ -29,6 +29,11 @@ import { CommentsService } from "../../comments/application/comments.service";
 import { CommentsQueryRepository } from "../../comments/infrastructure/query/comments.query-repository";
 import { GetCommentsQueryParams } from "../../comments/api/input-dto/get-comments-query-params.input-dto";
 import { BasicAuthGuard } from "../../../user-accounts/guards/basic/basic-auth.guard";
+import { JwtAuthGuard } from "../../../user-accounts/guards/bearer/jwt-auth.guard";
+import {
+  ExtractUserFromRequest
+} from "../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator";
+import { UserContextDto } from "../../../user-accounts/guards/dto/user-context.dto";
 
 @Controller(SETTINGS.PATH.POSTS)
 export class PostsController {
@@ -83,17 +88,20 @@ export class PostsController {
     return this.postsService.deletePost(id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Post(":id/comments")
   async createCommentByPostId(
     @Param("id") id: string,
     @Body() body: CreateCommentByPostIdInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<CommentViewDto> {
     await this.postsQueryRepository.getByIdOrNotFoundFail(id);
 
     const commentId = await this.commentsService.createComment({
       content: body.content,
       postId: id,
-      userId: "fake user id from post controller", // need to get from middleware
+      userId: user.id,
     });
 
     return this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);

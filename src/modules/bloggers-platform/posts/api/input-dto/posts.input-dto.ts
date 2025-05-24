@@ -18,5 +18,7 @@ export class CreatePostInputDto {
 }
 
 export class CreateCommentByPostIdInputDto {
+  @IsString()
+  @Length(20, 300)
   content: string;
 }

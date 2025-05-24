@@ -8,6 +8,10 @@ import {
 import { CommentViewDto } from "../../api/view-dto/comments.view-dto";
 import { Comment, CommentModelType } from "../../domain/comment.entity";
 import { PaginatedViewDto } from "../../../../../core/dto/base.paginated.view-dto";
+import { DomainException } from "../../../../../core/exceptions/domain-exceptions";
+import {
+  DomainExceptionCode
+} from "../../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -22,7 +26,9 @@ export class CommentsQueryRepository {
     query: GetCommentsQueryParams;
     postId?: string;
   }): Promise<PaginatedViewDto<CommentViewDto[]>> {
-    const filter: FilterQuery<Comment> = {};
+    const filter: FilterQuery<Comment> = {
+      deletedAt: null,
+    };
 
     if (postId) {
       filter.$or = filter.$or || [];
@@ -51,15 +57,34 @@ export class CommentsQueryRepository {
   async getByIdOrNotFoundFail(id: string): Promise<CommentViewDto> {
     const isObjectId = mongoose.Types.ObjectId.isValid(id);
     if (!isObjectId) {
-      throw new NotFoundException("comment not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Comment not found",
+        extensions: [
+          {
+            field: "",
+            message: "Comment not found",
+          },
+        ],
+      });
     }
 
     const comment = await this.CommentModel.findOne({
       _id: id,
+      deletedAt: null,
     });
 
     if (!comment) {
-      throw new NotFoundException("comment not found");
+      throw new DomainException({
+        code: DomainExceptionCode.NotFound,
+        message: "Comment not found",
+        extensions: [
+          {
+            field: "",
+            message: "Comment not found",
+          },
+        ],
+      });
     }
 
     return CommentViewDto.mapToView(comment);

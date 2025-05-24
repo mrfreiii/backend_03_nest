@@ -6,9 +6,15 @@ import {
 import { SETTINGS } from "../../settings";
 import { createTestPosts } from "./helpers";
 import { createTestBlogs } from "../blogs/helpers";
-import { CreatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/posts.input-dto";
+import {
+  CreateCommentByPostIdInputDto,
+  CreatePostInputDto,
+} from "../../modules/bloggers-platform/posts/api/input-dto/posts.input-dto";
 import { UpdatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/update-post.input-dto";
 import { PostViewDto } from "../../modules/bloggers-platform/posts/api/view-dto/posts.view-dto";
+import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
+import { createTestComments } from "../comments/helpers";
 
 describe("create post /posts", () => {
   connectToTestDBAndClearRepositories();
@@ -334,72 +340,121 @@ describe("delete post by id /posts/:id", () => {
   });
 });
 
-// describe("create comment by post id /posts/:id/comments", () => {
-//   connectToTestDBAndClearRepositories();
-//
-//   let createdPost: PostViewDto;
-//
-//   beforeAll(async () => {
-//     const createdBlog = (await createTestBlogs())[0];
-//     createdPost = (await createTestPosts({ blogId: createdBlog.id }))[0];
-//   });
-//
-//   it("should return 404 for non existent post", async () => {
-//     await req
-//       .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
-//       .send({})
-//       .expect(404);
-//   });
-//
-//   it("should create a comment", async () => {
-//     const newComment: CreateCommentByPostIdInputDto = {
-//       content: "comment content bla-bla",
-//     };
-//
-//     const res = await req
-//       .post(`${SETTINGS.PATH.POSTS}/${createdPost.id}/comments`)
-//       .send(newComment)
-//       .expect(201);
-//
-//     expect(res.body).toEqual({
-//       ...newComment,
-//       commentatorInfo: {
-//         userId: expect.any(String),
-//         userLogin: expect.any(String),
-//       },
-//       id: expect.any(String),
-//       createdAt: expect.any(String),
-//       likesInfo: {
-//         dislikesCount: 0,
-//         likesCount: 0,
-//         myStatus: "None",
-//       },
-//     });
-//   });
-// });
+describe("create comment by post id /posts/:id/comments", () => {
+  connectToTestDBAndClearRepositories();
 
-// describe("get comments by postId /posts", () => {
-//   connectToTestDBAndClearRepositories();
-//
-//   it("should return 404 if post does not exist", async () => {
-//     await req.get(`${SETTINGS.PATH.POSTS}/777777/comments`).expect(404);
-//   });
-//
-//   it("should get not empty array", async () => {
-//     const createdCommentsData = await createTestComments();
-//
-//     const res = await req
-//       .get(
-//         `${SETTINGS.PATH.POSTS}/${createdCommentsData.createdPostId}/comments`,
-//       )
-//       .expect(200);
-//
-//     expect(res.body.pagesCount).toBe(1);
-//     expect(res.body.page).toBe(1);
-//     expect(res.body.pageSize).toBe(10);
-//     expect(res.body.totalCount).toBe(1);
-//     expect(res.body.items.length).toBe(1);
-//
-//     expect(res.body.items[0]).toEqual(createdCommentsData.comments[0]);
-//   });
-// });
+  let createdPost: PostViewDto;
+
+  let createdUser: UserViewDto;
+  let userToken: string;
+
+  beforeAll(async () => {
+    const createdBlog = (await createTestBlogs())[0];
+    createdPost = (await createTestPosts({ blogId: createdBlog.id }))[0];
+
+    createdUser = (await createTestUsers({}))[0];
+    userToken = (await getUsersJwtTokens([createdUser]))[0];
+  });
+
+  it("should return 401 for unauthorized user", async () => {
+    await req
+      .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+      .send({})
+      .expect(401);
+  });
+
+  it("should return 400 for invalid values", async () => {
+    const newComment: CreateCommentByPostIdInputDto = {
+      content: "test content",
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send(newComment)
+      .expect(400);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "content",
+      message:
+        "content must be longer than or equal to 20 characters; Received value: test content",
+    });
+  });
+
+  it("should return 404 for non existent post", async () => {
+    const newComment: CreateCommentByPostIdInputDto = {
+      content: "123456789012345678901 test content",
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send(newComment)
+      .expect(404);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "",
+      message: "Post not found",
+    });
+  });
+
+  it("should create a comment", async () => {
+    const newComment: CreateCommentByPostIdInputDto = {
+      content: "123456789012345678901 test content",
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.POSTS}/${createdPost.id}/comments`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send(newComment)
+      .expect(201);
+
+    expect(res.body).toEqual({
+      ...newComment,
+      commentatorInfo: {
+        userId: createdUser.id,
+        userLogin: createdUser.login,
+      },
+      id: expect.any(String),
+      createdAt: expect.any(String),
+      likesInfo: {
+        dislikesCount: 0,
+        likesCount: 0,
+        myStatus: "None",
+      },
+    });
+  });
+});
+
+describe("get comments by postId /posts", () => {
+  connectToTestDBAndClearRepositories();
+
+  it("should return 404 for non existent post", async () => {
+    const res = await req
+      .get(`${SETTINGS.PATH.POSTS}/777777/comments`)
+      .expect(404);
+
+    expect(res.body.errorsMessages[0]).toEqual({
+      field: "",
+      message: "Post not found",
+    });
+  });
+
+  it("should get not empty array", async () => {
+    const createdCommentsData = await createTestComments();
+
+    const res = await req
+      .get(
+        `${SETTINGS.PATH.POSTS}/${createdCommentsData.createdPostId}/comments`,
+      )
+      .expect(200);
+
+    expect(res.body.pagesCount).toBe(1);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(1);
+    expect(res.body.items.length).toBe(1);
+
+    expect(res.body.items[0]).toEqual(createdCommentsData.comments[0]);
+  });
+});
