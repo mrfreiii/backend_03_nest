@@ -10,18 +10,48 @@ import { UpdateLikeStatusInputDto } from "../../modules/bloggers-platform/commen
 describe("get comment by id /comments/:id", () => {
   connectToTestDBAndClearRepositories();
 
+  let createdComment: CommentViewDto;
+  let userToken: string;
+
+  beforeAll(async () => {
+    const createdCommentData = await createTestComments();
+
+    createdComment = createdCommentData.comments[0];
+    userToken = createdCommentData.userToken;
+  });
+
   it("should return 404 for non existent comment", async () => {
     await req.get(`${SETTINGS.PATH.COMMENTS}/777777`).expect(404);
   });
 
-  it("should get not empty array", async () => {
-    const createdComment = (await createTestComments()).comments[0];
-
+  it("should get comment", async () => {
     const res = await req
       .get(`${SETTINGS.PATH.COMMENTS}/${createdComment.id}`)
       .expect(200);
 
     expect(res.body).toEqual(createdComment);
+  });
+
+  it("should get comment with correct like-status", async () => {
+    await req
+      .put(`${SETTINGS.PATH.COMMENTS}/${createdComment.id}/like-status`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ likeStatus: "Like" })
+      .expect(204);
+
+    const res = await req
+      .get(`${SETTINGS.PATH.COMMENTS}/${createdComment.id}`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(200);
+
+    expect(res.body).toEqual({
+      ...createdComment,
+      likesInfo: {
+        dislikesCount: 0,
+        likesCount: 1,
+        myStatus: "Like",
+      },
+    });
   });
 });
 

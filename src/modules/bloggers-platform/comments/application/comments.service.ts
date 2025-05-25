@@ -13,6 +13,7 @@ import { LikesService } from "../../likes/application/likes.service";
 import { CommentViewDto } from "../api/view-dto/comments.view-dto";
 import { GetCommentInputDto } from "./dto/get-comment.input-dto";
 import { LikesRepository } from "../../likes/infrastructure/likes.repository";
+import { GetCommentsLikesStatusesDto } from "./dto/get-comments-like-statuses.dto";
 
 @Injectable()
 export class CommentsService {
@@ -145,5 +146,32 @@ export class CommentsService {
     });
 
     await this.commentsRepository.save(comment);
+  }
+
+  async getLikeStatusesForComments(
+    dto: GetCommentsLikesStatusesDto,
+  ): Promise<CommentViewDto[]> {
+    const { comments, userId } = dto;
+
+    const userLikeStatuses = await this.likesRepository.getLikesForEntities({
+      userId: userId!,
+      entitiesIds: comments.map((comment) => comment.id),
+    });
+
+    return comments.map((comment) => {
+      const userLikeStatus =
+        userLikeStatuses.find(
+          (status) =>
+            status.userId === userId && status.entityId === comment.id,
+        )?.status || LikeStatusEnum.None;
+
+      return {
+        ...comment,
+        likesInfo: {
+          ...comment.likesInfo,
+          myStatus: userLikeStatus,
+        },
+      };
+    });
   }
 }

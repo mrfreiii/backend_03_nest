@@ -23,7 +23,6 @@ import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-o
 import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
 
 // TODO:
-//  3.Проверить все эндпоинты, где возвращаются лайки, они должны учитывать myStatus
 //  4.Перевести auth и user на useCases
 
 @Controller(SETTINGS.PATH.COMMENTS)

@@ -12,6 +12,7 @@ import { PostsRepository } from "../infrastructure/posts.repository";
 import { UpdatePostInputDto } from "../api/input-dto/update-post.input-dto";
 import { LikesRepository } from "../../likes/infrastructure/likes.repository";
 import { BlogsExternalQueryRepository } from "../../blogs/infrastructure/external-query/blogs.external-query-repository";
+import { GetLikesStatusesForPostsDto } from "./dto/get-all-post.dto";
 
 @Injectable()
 export class PostsService {
@@ -135,5 +136,31 @@ export class PostsService {
     });
 
     await this.postsRepository.save(post);
+  }
+
+  async getLikeStatusesForPosts(
+    dto: GetLikesStatusesForPostsDto,
+  ): Promise<PostViewDto[]> {
+    const { posts, userId } = dto;
+
+    const userLikeStatuses = await this.likesRepository.getLikesForEntities({
+      userId: userId!,
+      entitiesIds: posts.map((post) => post.id),
+    });
+
+    return posts.map((post) => {
+      const userLikeStatus =
+        userLikeStatuses.find(
+          (status) => status.userId === userId && status.entityId === post.id,
+        )?.status || LikeStatusEnum.None;
+
+      return {
+        ...post,
+        extendedLikesInfo: {
+          ...post.extendedLikesInfo,
+          myStatus: userLikeStatus,
+        },
+      };
+    });
   }
 }

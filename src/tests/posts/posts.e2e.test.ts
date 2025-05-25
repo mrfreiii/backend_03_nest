@@ -15,6 +15,7 @@ import {
 import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
 import { PostViewDto } from "../../modules/bloggers-platform/posts/api/view-dto/posts.view-dto";
 import { UpdatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/update-post.input-dto";
+import { CommentViewDto } from "../../modules/bloggers-platform/comments/api/view-dto/comments.view-dto";
 
 describe("create post /posts", () => {
   connectToTestDBAndClearRepositories();
@@ -120,6 +121,8 @@ describe("create post /posts", () => {
 describe("get all /posts", () => {
   connectToTestDBAndClearRepositories();
 
+  let createdPost: PostViewDto;
+
   it("should get empty array", async () => {
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -128,7 +131,7 @@ describe("get all /posts", () => {
 
   it("should get not empty array", async () => {
     const createdBlog = (await createTestBlogs())[0];
-    const createdPost = (await createTestPosts({ blogId: createdBlog.id }))[0];
+    createdPost = (await createTestPosts({ blogId: createdBlog.id }))[0];
 
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -136,6 +139,39 @@ describe("get all /posts", () => {
     expect(res.body.items[0]).toEqual({
       ...createdPost,
       blogName: createdBlog.name,
+    });
+  });
+
+  it("should return post with like-status", async () => {
+    const user = (await createTestUsers({}))[0];
+    const userToken = (await getUsersJwtTokens([user]))[0];
+
+    await req
+      .put(`${SETTINGS.PATH.POSTS}/${createdPost.id}/like-status`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ likeStatus: "Like" })
+      .expect(204);
+
+    const res = await req
+      .get(SETTINGS.PATH.POSTS)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(200);
+
+    expect(res.body.items.length).toBe(1);
+    expect(res.body.items[0]).toEqual({
+      ...createdPost,
+      extendedLikesInfo: {
+        likesCount: 1,
+        dislikesCount: 0,
+        myStatus: "Like",
+        newestLikes: [
+          {
+            addedAt: expect.any(String),
+            login: user.login,
+            userId: user.id,
+          },
+        ],
+      },
     });
   });
 });
@@ -429,6 +465,18 @@ describe("create comment by post id /posts/:id/comments", () => {
 describe("get comments by postId /posts", () => {
   connectToTestDBAndClearRepositories();
 
+  let createdComment: CommentViewDto;
+  let createdPostId: string;
+  let userToken: string;
+
+  beforeAll(async () => {
+    const createdCommentsData = await createTestComments();
+
+    createdComment = createdCommentsData.comments[0];
+    createdPostId = createdCommentsData.createdPostId;
+    userToken = createdCommentsData.userToken;
+  });
+
   it("should return 404 for non existent post", async () => {
     const res = await req
       .get(`${SETTINGS.PATH.POSTS}/777777/comments`)
@@ -441,12 +489,8 @@ describe("get comments by postId /posts", () => {
   });
 
   it("should get not empty array", async () => {
-    const createdCommentsData = await createTestComments();
-
     const res = await req
-      .get(
-        `${SETTINGS.PATH.POSTS}/${createdCommentsData.createdPostId}/comments`,
-      )
+      .get(`${SETTINGS.PATH.POSTS}/${createdPostId}/comments`)
       .expect(200);
 
     expect(res.body.pagesCount).toBe(1);
@@ -455,7 +499,35 @@ describe("get comments by postId /posts", () => {
     expect(res.body.totalCount).toBe(1);
     expect(res.body.items.length).toBe(1);
 
-    expect(res.body.items[0]).toEqual(createdCommentsData.comments[0]);
+    expect(res.body.items[0]).toEqual(createdComment);
+  });
+
+  it("should return comment with correct like-status", async () => {
+    await req
+      .put(`${SETTINGS.PATH.COMMENTS}/${createdComment.id}/like-status`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ likeStatus: "Like" })
+      .expect(204);
+
+    const res = await req
+      .get(`${SETTINGS.PATH.POSTS}/${createdPostId}/comments`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(200);
+
+    expect(res.body.pagesCount).toBe(1);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(1);
+    expect(res.body.items.length).toBe(1);
+
+    expect(res.body.items[0]).toEqual({
+      ...createdComment,
+      likesInfo: {
+        dislikesCount: 0,
+        likesCount: 1,
+        myStatus: "Like",
+      },
+    });
   });
 });
 

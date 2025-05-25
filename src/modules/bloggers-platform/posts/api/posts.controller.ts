@@ -45,11 +45,25 @@ export class PostsController {
     private commentsService: CommentsService,
   ) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtOptionalAuthGuard)
   @Get()
   async getAll(
     @Query() query: GetPostsQueryParams,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    return this.postsQueryRepository.getAll({ query });
+    const allPosts = await this.postsQueryRepository.getAll({
+      query,
+    });
+
+    if (user?.id) {
+      allPosts.items = await this.postsService.getLikeStatusesForPosts({
+        userId: user.id,
+        posts: allPosts.items,
+      });
+    }
+
+    return allPosts;
   }
 
   @UseGuards(BasicAuthGuard)
@@ -116,14 +130,31 @@ export class PostsController {
     return this.commentsQueryRepository.getByIdOrNotFoundFail(commentId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtOptionalAuthGuard)
   @Get(":id/comments")
   async getCommentsByPostId(
     @Query() query: GetCommentsQueryParams,
     @Param("id") id: string,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<CommentViewDto[]>> {
     await this.postsQueryRepository.getByIdOrNotFoundFail(id);
 
-    return this.commentsQueryRepository.getAll({ query, postId: id });
+    const allComments = await this.commentsQueryRepository.getAll({
+      query,
+      postId: id,
+    });
+
+    if (user?.id) {
+      allComments.items = await this.commentsService.getLikeStatusesForComments(
+        {
+          userId: user.id,
+          comments: allComments.items,
+        },
+      );
+    }
+
+    return allComments;
   }
 
   @UseGuards(JwtAuthGuard)

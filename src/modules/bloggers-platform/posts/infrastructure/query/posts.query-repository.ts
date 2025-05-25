@@ -7,9 +7,7 @@ import { PostViewDto } from "../../api/view-dto/posts.view-dto";
 import { PaginatedViewDto } from "../../../../../core/dto/base.paginated.view-dto";
 import { GetPostsQueryParams } from "../../api/input-dto/get-posts-query-params.input-dto";
 import { DomainException } from "../../../../../core/exceptions/domain-exceptions";
-import {
-  DomainExceptionCode
-} from "../../../../../core/exceptions/domain-exception-codes";
+import { DomainExceptionCode } from "../../../../../core/exceptions/domain-exception-codes";
 
 @Injectable()
 export class PostsQueryRepository {

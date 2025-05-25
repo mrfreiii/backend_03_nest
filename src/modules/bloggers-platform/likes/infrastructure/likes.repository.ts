@@ -2,9 +2,9 @@ import { ObjectId } from "mongoose";
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 
-import { Like, LikeDocument, LikeModelType } from "../domain/like.entity";
 import { LikeStatusEnum } from "../enums/likes.enum";
 import { NewestLikes } from "../../posts/domain/newestLikes.schema";
+import { Like, LikeDocument, LikeModelType } from "../domain/like.entity";
 
 @Injectable()
 export class LikesRepository {
@@ -41,6 +41,19 @@ export class LikesRepository {
       .lean();
 
     return this._mapLastThreeLikes(likes);
+  }
+
+  async getLikesForEntities({
+    userId,
+    entitiesIds,
+  }: {
+    userId: string;
+    entitiesIds: string[];
+  }): Promise<LikeDocument[]> {
+    return this.LikeModel.find({
+      userId,
+      entityId: { $in: entitiesIds },
+    });
   }
 
   _mapLastThreeLikes(likes: LikeDocument[]): NewestLikes[] {

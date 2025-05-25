@@ -12,6 +12,9 @@ import { BlogViewDto } from "../../modules/bloggers-platform/blogs/api/view-dto/
 import { CreateBlogInputDto } from "../../modules/bloggers-platform/blogs/api/input-dto/blogs.input-dto";
 import { CreatePostInputDto } from "../../modules/bloggers-platform/posts/api/input-dto/posts.input-dto";
 import { GetBlogsQueryParams } from "../../modules/bloggers-platform/blogs/api/input-dto/get-blogs-query-params.input-dto";
+import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
+import { PostViewDto } from "../../modules/bloggers-platform/posts/api/view-dto/posts.view-dto";
+import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 
 describe("create blog /blogs", () => {
   connectToTestDBAndClearRepositories();
@@ -321,6 +324,27 @@ describe("delete blog by id /blogs/:id", () => {
 describe("get posts by blogId /blogs/:id/posts", () => {
   connectToTestDBAndClearRepositories();
 
+  let user: UserViewDto;
+  let userToken: string;
+  let createdPosts: PostViewDto[];
+
+  beforeAll(async () => {
+    const createdUsers = await createTestUsers({});
+    user = createdUsers[0];
+
+    const usersTokens = await getUsersJwtTokens(createdUsers);
+    userToken = usersTokens[0];
+
+    const createdBlog = (await createTestBlogs())[0];
+    createdPosts = await createTestPosts({ blogId: createdBlog.id, count: 2 });
+
+    await req
+      .put(`${SETTINGS.PATH.POSTS}/${createdPosts[0].id}/like-status`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ likeStatus: "Like" })
+      .expect(204);
+  });
+
   it("should return 404 for non existent blog", async () => {
     const res = await req
       .get(`${SETTINGS.PATH.BLOGS}/123777/posts`)
@@ -332,15 +356,9 @@ describe("get posts by blogId /blogs/:id/posts", () => {
     });
   });
 
-  it("should get not empty array", async () => {
-    const createdBlog = (await createTestBlogs())[0];
-    const createdPosts = await createTestPosts({
-      blogId: createdBlog.id,
-      count: 2,
-    });
-
+  it("should get posts with 'None' like-status for all posts for unauthorized user", async () => {
     const res = await req
-      .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
+      .get(`${SETTINGS.PATH.BLOGS}/${createdPosts[0]?.blogId}/posts`)
       .expect(200);
 
     expect(res.body.pagesCount).toBe(1);
@@ -349,7 +367,56 @@ describe("get posts by blogId /blogs/:id/posts", () => {
     expect(res.body.totalCount).toBe(2);
     expect(res.body.items.length).toBe(2);
 
-    expect(res.body.items).toEqual([createdPosts[1], createdPosts[0]]);
+    expect(res.body.items).toEqual([
+      createdPosts[1],
+      {
+        ...createdPosts[0],
+        extendedLikesInfo: {
+          likesCount: 1,
+          dislikesCount: 0,
+          myStatus: "None",
+          newestLikes: [
+            {
+              addedAt: expect.any(String),
+              login: user.login,
+              userId: user.id,
+            },
+          ],
+        },
+      },
+    ]);
+  });
+
+  it("should get posts with 'Like' like-status for liked post for authorized user", async () => {
+    const res = await req
+      .get(`${SETTINGS.PATH.BLOGS}/${createdPosts[0]?.blogId}/posts`)
+      .set("Authorization", `Bearer ${userToken}`)
+      .expect(200);
+
+    expect(res.body.pagesCount).toBe(1);
+    expect(res.body.page).toBe(1);
+    expect(res.body.pageSize).toBe(10);
+    expect(res.body.totalCount).toBe(2);
+    expect(res.body.items.length).toBe(2);
+
+    expect(res.body.items).toEqual([
+      createdPosts[1],
+      {
+        ...createdPosts[0],
+        extendedLikesInfo: {
+          likesCount: 1,
+          dislikesCount: 0,
+          myStatus: "Like",
+          newestLikes: [
+            {
+              addedAt: expect.any(String),
+              login: user.login,
+              userId: user.id,
+            },
+          ],
+        },
+      },
+    ]);
   });
 });
 

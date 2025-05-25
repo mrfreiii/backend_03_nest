@@ -11,7 +11,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBasicAuth, ApiParam } from "@nestjs/swagger";
+import { ApiBasicAuth, ApiBearerAuth, ApiParam } from "@nestjs/swagger";
 
 import { BlogViewDto } from "./view-dto/blogs.view-dto";
 import { CreateBlogInputDto } from "./input-dto/blogs.input-dto";
@@ -30,6 +30,9 @@ import { PostsQueryRepository } from "../../posts/infrastructure/query/posts.que
 import { SETTINGS } from "../../../../settings";
 import { Public } from "../../../user-accounts/guards/decorators/public.decorator";
 import { BasicAuthGuard } from "../../../user-accounts/guards/basic/basic-auth.guard";
+import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-optional-auth.guard";
+import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
+import { UserContextDto } from "../../../user-accounts/guards/dto/user-context.dto";
 
 @Controller(SETTINGS.PATH.BLOGS)
 @UseGuards(BasicAuthGuard)
@@ -82,15 +85,30 @@ export class BlogsController {
     return this.blogsService.deleteBlog(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtOptionalAuthGuard)
   @Public()
   @Get(":id/posts")
   async getPostsByBlogId(
     @Query() query: GetPostsQueryParams,
     @Param("id") id: string,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
 
-    return this.postsQueryRepository.getAll({ query, blogId: id });
+    const allPosts = await this.postsQueryRepository.getAll({
+      query,
+      blogId: id,
+    });
+
+    if (user?.id) {
+      allPosts.items = await this.postsService.getLikeStatusesForPosts({
+        userId: user.id,
+        posts: allPosts.items,
+      });
+    }
+
+    return allPosts;
   }
 
   @Post(":id/posts")
