@@ -34,7 +34,7 @@ export class CommentsService {
       const userLikeStatus =
         await this.likesRepository.getLikeByUserIdAndEntityId({
           userId,
-          entityId: comment?.id,
+          entityId: commentId,
         });
 
       comment.likesInfo.myStatus =

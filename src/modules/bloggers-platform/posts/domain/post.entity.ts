@@ -8,6 +8,7 @@ import {
 import { UpdatePostDto } from "../dto/post.dto";
 import { LikeStatusEnum } from "../../likes/enums/likes.enum";
 import { CreatePostDomainDto } from "./dto/create-post.domain.dto";
+import { UpdateLikesDto } from "./dto/update-likes.dto";
 
 //флаг timestamp автоматичеки добавляет поля updatedAt и createdAt
 /**
@@ -120,6 +121,12 @@ export class Post {
     this.content = dto.content;
     this.blogId = dto.blogId;
     this.blogName = dto.blogName;
+  }
+
+  updateLikes(dto: UpdateLikesDto) {
+    this.extendedLikesInfo.likesCount = dto.likesCount;
+    this.extendedLikesInfo.dislikesCount = dto.dislikesCount;
+    this.extendedLikesInfo.newestLikes = dto.newestLikes;
   }
 }
 

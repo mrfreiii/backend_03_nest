@@ -14,7 +14,7 @@ export class ExtendedLikesInfo {
   dislikesCount: number;
 
   @Prop({ type: String, enum: LikeStatusEnum, required: true })
-  myStatus: LikeStatusEnum;
+  myStatus: string;
 
   @Prop({ type: Array<typeof NewestLikesSchema> })
   newestLikes: NewestLikes[];

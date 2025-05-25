@@ -30,10 +30,11 @@ import { CommentsQueryRepository } from "../../comments/infrastructure/query/com
 import { GetCommentsQueryParams } from "../../comments/api/input-dto/get-comments-query-params.input-dto";
 import { BasicAuthGuard } from "../../../user-accounts/guards/basic/basic-auth.guard";
 import { JwtAuthGuard } from "../../../user-accounts/guards/bearer/jwt-auth.guard";
-import {
-  ExtractUserFromRequest
-} from "../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator";
+import { ExtractUserFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator";
 import { UserContextDto } from "../../../user-accounts/guards/dto/user-context.dto";
+import { UpdateLikeStatusInputDto } from "../../comments/api/input-dto/update-like-status.input-dto";
+import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-optional-auth.guard";
+import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
 
 @Controller(SETTINGS.PATH.POSTS)
 export class PostsController {
@@ -60,10 +61,18 @@ export class PostsController {
     return this.postsQueryRepository.getByIdOrNotFoundFail(postId);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtOptionalAuthGuard)
   @ApiParam({ name: "id" })
-  @Get(":id")
-  async getById(@Param("id") id: string): Promise<PostViewDto> {
-    return this.postsQueryRepository.getByIdOrNotFoundFail(id);
+  @Get(":postId")
+  async getById(
+    @Param("postId") postId: string,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
+  ): Promise<PostViewDto> {
+    return this.postsService.getPostById({
+      postId,
+      userId: user?.id || null,
+    });
   }
 
   @UseGuards(BasicAuthGuard)
@@ -115,5 +124,21 @@ export class PostsController {
     await this.postsQueryRepository.getByIdOrNotFoundFail(id);
 
     return this.commentsQueryRepository.getAll({ query, postId: id });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Put(":postId/like-status")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePostLikeStatus(
+    @Param("postId") postId: string,
+    @Body() body: UpdateLikeStatusInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    return this.postsService.updatePostLikeStatus({
+      userId: user.id,
+      postId,
+      newLikeStatus: body.likeStatus,
+    });
   }
 }

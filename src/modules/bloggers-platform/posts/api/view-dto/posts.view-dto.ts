@@ -1,4 +1,3 @@
-import { LikeStatusEnum } from "../../../likes/enums/likes.enum";
 import { PostDocument } from "../../domain/post.entity";
 
 class NewestLikesDto {
@@ -18,7 +17,7 @@ export class PostViewDto {
   extendedLikesInfo: {
     likesCount: number;
     dislikesCount: number;
-    myStatus: LikeStatusEnum;
+    myStatus: string;
     newestLikes: NewestLikesDto[] | [];
   };
 
