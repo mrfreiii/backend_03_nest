@@ -22,12 +22,18 @@ import { CommentsService } from "./comments/application/comments.service";
 import { CommentsRepository } from "./comments/infrastructure/comments.repository";
 import { CommentsQueryRepository } from "./comments/infrastructure/query/comments.query-repository";
 
+import { Like, LikeSchema } from "./likes/domain/like.entity";
+import { LikesService } from "./likes/application/likes.service";
+import { LikesRepository } from "./likes/infrastructure/likes.repository";
+import { LikesQueryRepository } from "./likes/infrastructure/query/likes.query-repository";
+
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
+      { name: Like.name, schema: LikeSchema },
     ]),
     UserAccountsModule,
   ],
@@ -43,6 +49,9 @@ import { CommentsQueryRepository } from "./comments/infrastructure/query/comment
     CommentsService,
     CommentsRepository,
     CommentsQueryRepository,
+    LikesService,
+    LikesRepository,
+    LikesQueryRepository,
   ],
   exports: [],
 })

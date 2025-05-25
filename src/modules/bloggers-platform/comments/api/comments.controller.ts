@@ -11,25 +11,26 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
-import {
-  CommentsQueryRepository,
-} from "../infrastructure/query/comments.query-repository";
 import { SETTINGS } from "../../../../settings";
 import { CommentViewDto } from "./view-dto/comments.view-dto";
 import { CommentsService } from "../application/comments.service";
 import { UpdateCommentInputDto } from "./input-dto/update-comment.input-dto";
 import { UserContextDto } from "../../../user-accounts/guards/dto/user-context.dto";
 import { JwtAuthGuard } from "../../../user-accounts/guards/bearer/jwt-auth.guard";
-import {
-  ExtractUserFromRequest,
-} from "../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator";
+import { ExtractUserFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-from-request.decorator";
+import { UpdateLikeStatusInputDto } from "./input-dto/update-like-status.input-dto";
+import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-optional-auth.guard";
+import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
+
+// TODO:
+//  +1.Endpoint для лайков комментов
+//  2.Endpoint для лайков постов
+//  3.Проверить все эндпоинты, где возвращаются лайки, они должны учитывать myStatus
+//  4.Перевести auth и user на useCases
 
 @Controller(SETTINGS.PATH.COMMENTS)
 export class CommentsController {
-  constructor(
-    private commentsQueryRepository: CommentsQueryRepository,
-    private commentsService: CommentsService,
-  ) {}
+  constructor(private commentsService: CommentsService) {}
 
   // @Get()
   // async getAll(
@@ -38,9 +39,17 @@ export class CommentsController {
   //   return this.commentsQueryRepository.getAll({ query });
   // }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtOptionalAuthGuard)
   @Get(":id")
-  async getById(@Param("id") id: string): Promise<CommentViewDto> {
-    return this.commentsQueryRepository.getByIdOrNotFoundFail(id);
+  async getById(
+    @Param("id") id: string,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto | null,
+  ): Promise<CommentViewDto> {
+    return this.commentsService.getCommentById({
+      commentId: id,
+      userId: user?.id || null,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -70,6 +79,22 @@ export class CommentsController {
     return this.commentsService.deleteComment({
       userId: user.id,
       commentId,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Put(":commentId/like-status")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateCommentLikeStatus(
+    @Param("commentId") commentId: string,
+    @Body() body: UpdateLikeStatusInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ) {
+    return this.commentsService.updateCommentLikeStatus({
+      userId: user.id,
+      commentId,
+      newLikeStatus: body.likeStatus,
     });
   }
 }

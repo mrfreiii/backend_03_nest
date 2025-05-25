@@ -1,7 +1,7 @@
 import { HydratedDocument, Model } from "mongoose";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-import { LikeStatusEnum } from "../../dto/likes.dto";
+import { LikeStatusEnum } from "../../likes/enums/likes.enum";
 import { LikesInfo, LikesInfoSchema } from "./likesInfo.schema";
 import { CreateCommentDomainDto } from "./dto/create-comment.domain.dto";
 import {
@@ -83,6 +83,17 @@ export class Comment {
       throw new Error("Entity already deleted");
     }
     this.deletedAt = new Date();
+  }
+
+  updateLikes({
+    likesCount,
+    dislikesCount,
+  }: {
+    likesCount: number;
+    dislikesCount: number;
+  }) {
+    this.likesInfo.likesCount = likesCount;
+    this.likesInfo.dislikesCount = dislikesCount;
   }
 }
 

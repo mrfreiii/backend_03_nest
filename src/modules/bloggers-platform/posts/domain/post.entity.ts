@@ -6,7 +6,7 @@ import {
   ExtendedLikesInfoSchema,
 } from "./extendedLikesInfo.schema";
 import { UpdatePostDto } from "../dto/post.dto";
-import { LikeStatusEnum } from "../../dto/likes.dto";
+import { LikeStatusEnum } from "../../likes/enums/likes.enum";
 import { CreatePostDomainDto } from "./dto/create-post.domain.dto";
 
 //флаг timestamp автоматичеки добавляет поля updatedAt и createdAt

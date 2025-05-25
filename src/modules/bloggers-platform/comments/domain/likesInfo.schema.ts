@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { LikeStatusEnum } from "../../dto/likes.dto";
+import { LikeStatusEnum } from "../../likes/enums/likes.enum";
 
 @Schema({
   _id: false,
@@ -12,7 +12,7 @@ export class LikesInfo {
   dislikesCount: number;
 
   @Prop({ type: String, enum: LikeStatusEnum, required: true })
-  myStatus: LikeStatusEnum;
+  myStatus: string;
 }
 
 export const LikesInfoSchema = SchemaFactory.createForClass(LikesInfo);

@@ -20,6 +20,12 @@ export class UsersRepository {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: "User not found",
+        extensions: [
+          {
+            field: "",
+            message: "User not found",
+          },
+        ],
       });
     }
 
@@ -36,6 +42,12 @@ export class UsersRepository {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
         message: "User not found",
+        extensions: [
+          {
+            field: "",
+            message: "User not found",
+          },
+        ],
       });
     }
 

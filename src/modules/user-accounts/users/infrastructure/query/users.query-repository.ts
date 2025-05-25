@@ -25,7 +25,13 @@ export class UsersQueryRepository {
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.NotFound,
-        message: "user not found",
+        message: "User not found",
+        extensions: [
+          {
+            field: "",
+            message: "User not found",
+          },
+        ],
       });
     }
 

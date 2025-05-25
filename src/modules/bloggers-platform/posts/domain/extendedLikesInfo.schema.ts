@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
-import { LikeStatusEnum } from "../../dto/likes.dto";
+import { LikeStatusEnum } from "../../likes/enums/likes.enum";
 import { NewestLikes, NewestLikesSchema } from "./newestLikes.schema";
 
 @Schema({

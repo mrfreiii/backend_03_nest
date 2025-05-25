@@ -12,7 +12,7 @@ export type TestCommentDataType = {
   createdPostId: string;
   createdUser: UserViewDto;
   userToken: string;
-}
+};
 
 export const createTestComments = async (
   count: number = 1,

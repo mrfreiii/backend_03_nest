@@ -1,4 +1,4 @@
-import { LikeStatusEnum } from "../../../dto/likes.dto";
+import { LikeStatusEnum } from "../../../likes/enums/likes.enum";
 import { PostDocument } from "../../domain/post.entity";
 
 class NewestLikesDto {

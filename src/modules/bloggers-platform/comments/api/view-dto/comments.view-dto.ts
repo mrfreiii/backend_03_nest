@@ -1,4 +1,3 @@
-import { LikeStatusEnum } from "../../../dto/likes.dto";
 import { CommentDocument } from "../../domain/comment.entity";
 
 export class CommentViewDto {
@@ -12,7 +11,7 @@ export class CommentViewDto {
   likesInfo: {
     likesCount: number;
     dislikesCount: number;
-    myStatus: LikeStatusEnum;
+    myStatus: string;
   };
 
   static mapToView(comment: CommentDocument): CommentViewDto {
