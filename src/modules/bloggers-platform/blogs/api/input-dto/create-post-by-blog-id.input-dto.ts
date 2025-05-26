@@ -1,7 +1,7 @@
 import { IsString, Length } from "class-validator";
 import { Trim } from "../../../../../core/decorators/transform/trim";
 
-export class UpdatePostInputDto {
+export class CreatePostByBlogIdInputDto {
   @IsString()
   @Trim()
   @Length(1, 30)
@@ -16,7 +16,4 @@ export class UpdatePostInputDto {
   @Trim()
   @Length(1, 1000)
   content: string;
-
-  @IsString()
-  blogId: string;
 }

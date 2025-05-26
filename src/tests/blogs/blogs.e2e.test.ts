@@ -15,6 +15,7 @@ import { GetBlogsQueryParams } from "../../modules/bloggers-platform/blogs/api/i
 import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
 import { PostViewDto } from "../../modules/bloggers-platform/posts/api/view-dto/posts.view-dto";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { CreatePostByBlogIdInputDto } from "../../modules/bloggers-platform/blogs/api/input-dto/create-post-by-blog-id.input-dto";
 
 describe("create blog /blogs", () => {
   connectToTestDBAndClearRepositories();
@@ -427,11 +428,41 @@ describe("create post by blogId /blogs/:id/posts", () => {
     await req.post(`${SETTINGS.PATH.BLOGS}/123777/posts`).send({}).expect(401);
   });
 
-  it("should return 404 for non existent blog", async () => {
+  it("should return 400 for invalid values", async () => {
+    const newPost: Omit<CreatePostByBlogIdInputDto, "shortDescription"> = {
+      title: "length_31-DrmM8lHeNjSykwSzQ7Her",
+      content: "valid",
+    };
+
     const res = await req
       .post(`${SETTINGS.PATH.BLOGS}/123777/posts`)
       .set("Authorization", testBasicAuthHeader)
-      .send({})
+      .send(newPost)
+      .expect(400);
+
+    expect(res.body.errorsMessages).toEqual([
+      {
+        field: "title",
+        message: "title must be shorter than or equal to 30 characters; Received value: length_31-DrmM8lHeNjSykwSzQ7Her",
+      },
+      {
+        field: "shortDescription",
+        message: "shortDescription must be longer than or equal to 1 characters; Received value: undefined",
+      },
+    ]);
+  });
+
+  it("should return 404 for non existent blog", async () => {
+    const newPost: CreatePostByBlogIdInputDto = {
+      title: "title",
+      content: "content",
+      shortDescription: "shortDescription"
+    };
+
+    const res = await req
+      .post(`${SETTINGS.PATH.BLOGS}/123777/posts`)
+      .set("Authorization", testBasicAuthHeader)
+      .send(newPost)
       .expect(404);
 
     expect(res.body.errorsMessages[0]).toEqual({

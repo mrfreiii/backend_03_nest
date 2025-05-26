@@ -33,6 +33,7 @@ import { BasicAuthGuard } from "../../../user-accounts/guards/basic/basic-auth.g
 import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-optional-auth.guard";
 import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
 import { UserContextDto } from "../../../user-accounts/guards/dto/user-context.dto";
+import { CreatePostByBlogIdInputDto } from "./input-dto/create-post-by-blog-id.input-dto";
 
 @Controller(SETTINGS.PATH.BLOGS)
 @UseGuards(BasicAuthGuard)
@@ -114,7 +115,7 @@ export class BlogsController {
   @Post(":id/posts")
   async createPostsByBlogId(
     @Param("id") id: string,
-    @Body() body: Omit<CreatePostInputDto, "blogId">,
+    @Body() body: CreatePostByBlogIdInputDto,
   ): Promise<PostViewDto> {
     await this.blogsQueryRepository.getByIdOrNotFoundFail(id);
 
