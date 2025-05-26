@@ -15,8 +15,8 @@ export class CreateBlogInputDto {
   @IsString()
   @Trim()
   @Length(1, 100)
-  @Matches(
-    /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
-  )
+  // @Matches(
+  //   /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
+  // )
   websiteUrl: string;
 }
