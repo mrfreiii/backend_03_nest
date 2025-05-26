@@ -14,7 +14,6 @@ import { Request, Response } from "express";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
-import { UsersService } from "../../users/application/users.service";
 import { LocalAuthGuard } from "../../guards/local/local-auth.guard";
 import { UserContextDto } from "../../guards/dto/user-context.dto";
 import { RegisterUserInputDto } from "./input-dto/register-user.input-dto";
@@ -27,11 +26,15 @@ import { JwtAuthGuard } from "../../guards/bearer/jwt-auth.guard";
 import { MeViewDto } from "../../users/api/view-dto/users.view-dto";
 import { LoginUserCommand } from "../application/usecases/login-user.usecase";
 import { AuthQueryRepository } from "../infrastructure/query/auth.query-repository";
+import { RegisterUserCommand } from "../../users/application/usecases/register-user.usecase";
+import { UpdateUserPasswordCommand } from "../../users/application/usecases/update-user-password.usecase";
+import { ConfirmUserRegistrationCommand } from "../../users/application/usecases/confirm-user-registration.usecase";
+import { ResendUserRegistrationEmailCommand } from "../../users/application/usecases/resend-user-registration-email.usecase";
+import { SendUserPasswordRecoveryCodeCommand } from "../../users/application/usecases/send-user-password-recovery-code.usecase";
 
 @Controller(SETTINGS.PATH.AUTH)
 export class AuthController {
   constructor(
-    private usersService: UsersService,
     private authQueryRepository: AuthQueryRepository,
     private commandBus: CommandBus,
   ) {}
@@ -39,16 +42,20 @@ export class AuthController {
   @Post("registration")
   @HttpCode(HttpStatus.NO_CONTENT)
   async registerUser(@Req() req: Request, @Body() body: RegisterUserInputDto) {
-    return this.usersService.registerUser({
-      dto: body,
-      currentURL: `${req.protocol + "://" + req.get("host")}`,
-    });
+    return this.commandBus.execute(
+      new RegisterUserCommand({
+        dto: body,
+        currentURL: `${req.protocol + "://" + req.get("host")}`,
+      }),
+    );
   }
 
   @Post("registration-confirmation")
   @HttpCode(HttpStatus.NO_CONTENT)
   async confirmRegistration(@Body() body: ConfirmUserRegistrationInputDto) {
-    return this.usersService.confirmUserRegistration(body.code);
+    return this.commandBus.execute(
+      new ConfirmUserRegistrationCommand(body.code),
+    );
   }
 
   @Post("registration-email-resending")
@@ -57,10 +64,12 @@ export class AuthController {
     @Req() req: Request,
     @Body() body: ResendUserRegistrationEmailInputDto,
   ) {
-    return this.usersService.resendRegistrationEmail({
-      email: body.email,
-      currentURL: `${req.protocol + "://" + req.get("host")}`,
-    });
+    return this.commandBus.execute(
+      new ResendUserRegistrationEmailCommand({
+        email: body.email,
+        currentURL: `${req.protocol + "://" + req.get("host")}`,
+      }),
+    );
   }
 
   @Post("password-recovery")
@@ -69,16 +78,18 @@ export class AuthController {
     @Req() req: Request,
     @Body() body: SendPasswordRecoveryCodeInputDto,
   ) {
-    return this.usersService.sendPasswordRecoveryCode({
-      email: body.email,
-      currentURL: `${req.protocol + "://" + req.get("host")}`,
-    });
+    return this.commandBus.execute(
+      new SendUserPasswordRecoveryCodeCommand({
+        email: body.email,
+        currentURL: `${req.protocol + "://" + req.get("host")}`,
+      }),
+    );
   }
 
   @Post("new-password")
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePassword(@Body() body: UpdatePasswordInputDto) {
-    return this.usersService.updatePassword(body);
+    return this.commandBus.execute(new UpdateUserPasswordCommand(body));
   }
 
   @Post("login")
