@@ -9,11 +9,11 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
+import { CommandBus } from "@nestjs/cqrs";
 import { Request, Response } from "express";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 import { SETTINGS } from "../../../../settings";
-import { AuthService } from "../application/auth.service";
 import { UsersService } from "../../users/application/users.service";
 import { LocalAuthGuard } from "../../guards/local/local-auth.guard";
 import { UserContextDto } from "../../guards/dto/user-context.dto";
@@ -25,14 +25,15 @@ import { ResendUserRegistrationEmailInputDto } from "./input-dto/resend-user-reg
 import { ExtractUserFromRequest } from "../../guards/decorators/param/extract-user-from-request.decorator";
 import { JwtAuthGuard } from "../../guards/bearer/jwt-auth.guard";
 import { MeViewDto } from "../../users/api/view-dto/users.view-dto";
+import { LoginUserCommand } from "../application/usecases/login-user.usecase";
 import { AuthQueryRepository } from "../infrastructure/query/auth.query-repository";
 
 @Controller(SETTINGS.PATH.AUTH)
 export class AuthController {
   constructor(
     private usersService: UsersService,
-    private authService: AuthService,
     private authQueryRepository: AuthQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Post("registration")
@@ -83,13 +84,13 @@ export class AuthController {
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
-  loginUser(
+  async loginUser(
     @ExtractUserFromRequest() user: UserContextDto,
     @Res({ passthrough: true }) response: Response,
-  ): {
+  ): Promise<{
     accessToken: string;
-  } {
-    const result = this.authService.login(user.id);
+  }> {
+    const result = await this.commandBus.execute(new LoginUserCommand(user.id));
 
     response.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,

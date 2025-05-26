@@ -10,7 +10,6 @@ import {
 import { User, UserSchema } from "./users/domain/user.entity";
 import { AuthController } from "./auth/api/auth.controller";
 import { UsersController } from "./users/api/users.controller";
-import { AuthService } from "./auth/application/auth.service";
 import { UsersService } from "./users/application/users.service";
 import { CryptoService } from "./users/application/crypto.service";
 import { UsersExternalService } from "./users/application/users.external-service";
@@ -21,11 +20,14 @@ import { UsersExternalQueryRepository } from "./users/infrastructure/external-qu
 import { NotificationsModule } from "../notifications/notifications.module";
 import { JwtStrategy } from "./guards/bearer/jwt.strategy";
 import { LocalStrategy } from "./guards/local/local.strategy";
+import { LoginUserCommandHandler } from "./auth/application/usecases/login-user.usecase";
+import { ValidateUserCommandHandler } from "./auth/application/usecases/validate-user.usecase";
 
 config();
 
+const commandHandlers = [ValidateUserCommandHandler, LoginUserCommandHandler];
+
 const services = [
-  AuthService,
   UsersService,
   CryptoService,
   UsersExternalService,
@@ -68,7 +70,13 @@ const repos = [
     JwtModule,
   ],
   controllers: [UsersController, AuthController],
-  providers: [...services, ...repos, LocalStrategy, JwtStrategy],
+  providers: [
+    ...commandHandlers,
+    ...services,
+    ...repos,
+    LocalStrategy,
+    JwtStrategy,
+  ],
   exports: [UsersExternalQueryRepository, UsersExternalService],
 })
 export class UserAccountsModule {}

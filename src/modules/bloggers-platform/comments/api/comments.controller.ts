@@ -22,9 +22,6 @@ import { UpdateLikeStatusInputDto } from "./input-dto/update-like-status.input-d
 import { JwtOptionalAuthGuard } from "../../../user-accounts/guards/bearer/jwt-optional-auth.guard";
 import { ExtractUserIfExistsFromRequest } from "../../../user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator";
 
-// TODO:
-//  4.Перевести auth и user на useCases
-
 @Controller(SETTINGS.PATH.COMMENTS)
 export class CommentsController {
   constructor(private commentsService: CommentsService) {}

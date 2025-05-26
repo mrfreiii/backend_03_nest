@@ -3,17 +3,18 @@ import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { validate } from "class-validator";
 import { plainToInstance } from "class-transformer";
+import { CommandBus } from "@nestjs/cqrs";
 
 import { UserContextDto } from "../dto/user-context.dto";
-import { LoginUserInputDto } from "../../auth/api/input-dto/login -user.input-dto";
-import { AuthService } from "../../auth/application/auth.service";
 import { throwFormattedErrors } from "../../../../setup/pipes.setup";
 import { DomainException } from "../../../../core/exceptions/domain-exceptions";
+import { LoginUserInputDto } from "../../auth/api/input-dto/login -user.input-dto";
 import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
+import { ValidateUserCommand } from "../../auth/application/usecases/validate-user.usecase";
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
+  constructor(private commandBus: CommandBus) {
     super({ usernameField: "loginOrEmail" });
   }
 
@@ -45,10 +46,12 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     //     message: "Value of password must be string",
     //   });
     // }
-    const user = await this.authService.validateUser({
-      loginOrEmail,
-      password,
-    });
+    const user = await this.commandBus.execute(
+      new ValidateUserCommand({
+        loginOrEmail,
+        password,
+      }),
+    );
     if (!user) {
       throw new DomainException({
         code: DomainExceptionCode.Unauthorized,
