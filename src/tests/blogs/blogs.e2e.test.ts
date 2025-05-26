@@ -443,11 +443,13 @@ describe("create post by blogId /blogs/:id/posts", () => {
     expect(res.body.errorsMessages).toEqual([
       {
         field: "title",
-        message: "title must be shorter than or equal to 30 characters; Received value: length_31-DrmM8lHeNjSykwSzQ7Her",
+        message:
+          "title must be shorter than or equal to 30 characters; Received value: length_31-DrmM8lHeNjSykwSzQ7Her",
       },
       {
         field: "shortDescription",
-        message: "shortDescription must be longer than or equal to 1 characters; Received value: undefined",
+        message:
+          "shortDescription must be longer than or equal to 1 characters; Received value: undefined",
       },
     ]);
   });
@@ -456,7 +458,7 @@ describe("create post by blogId /blogs/:id/posts", () => {
     const newPost: CreatePostByBlogIdInputDto = {
       title: "title",
       content: "content",
-      shortDescription: "shortDescription"
+      shortDescription: "shortDescription",
     };
 
     const res = await req
