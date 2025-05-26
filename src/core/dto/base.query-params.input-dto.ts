@@ -6,6 +6,8 @@ export enum SortDirection {
   Desc = "desc",
   Ascending = "ascending",
   Descending = "descending",
+  PositiveNumber = 1,
+  NegativeNumber = -1,
 }
 
 export class BaseQueryParams {
@@ -17,7 +19,6 @@ export class BaseQueryParams {
   @Type(() => Number)
   pageSize: number = 10;
 
-  @IsOptional()
   @IsEnum(SortDirection)
   sortDirection: SortDirection = SortDirection.Desc;
 
