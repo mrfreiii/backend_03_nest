@@ -1,4 +1,4 @@
-import { IsString, Length } from "class-validator";
+import { IsString, Length, Matches } from "class-validator";
 import { Trim } from "../../../../../core/decorators/transform/trim";
 
 export class CreateBlogInputDto {
@@ -15,8 +15,8 @@ export class CreateBlogInputDto {
   @IsString()
   @Trim()
   @Length(1, 100)
-  // @Matches(
-  //   /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
-  // )
+  @Matches(
+    /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
+  )
   websiteUrl: string;
 }
