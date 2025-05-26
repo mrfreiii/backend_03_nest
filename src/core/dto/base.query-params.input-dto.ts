@@ -4,6 +4,8 @@ import { IsEnum, IsNumber, IsOptional } from "class-validator";
 export enum SortDirection {
   Asc = "asc",
   Desc = "desc",
+  Ascending = "ascending",
+  Descending = "descending",
 }
 
 export class BaseQueryParams {
