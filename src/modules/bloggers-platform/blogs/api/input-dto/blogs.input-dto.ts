@@ -1,4 +1,4 @@
-import { IsString, Length, Matches } from "class-validator";
+import { IsString, Length } from "class-validator";
 import { Trim } from "../../../../../core/decorators/transform/trim";
 
 export class CreateBlogInputDto {
