@@ -63,7 +63,7 @@ const services = [
     useFactory: (): JwtService => {
       return new JwtService({
         secret: process.env?.ACCESS_TOKEN_SECRET,
-        signOptions: { expiresIn: "5m" },
+        signOptions: { expiresIn: "10s" },
       });
     },
     inject: [
@@ -75,7 +75,7 @@ const services = [
     useFactory: (): JwtService => {
       return new JwtService({
         secret: process.env?.REFRESH_TOKEN_SECRET,
-        signOptions: { expiresIn: "24h" },
+        signOptions: { expiresIn: "20s" },
       });
     },
     inject: [
