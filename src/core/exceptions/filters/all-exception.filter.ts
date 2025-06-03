@@ -5,11 +5,15 @@ import {
   HttpStatus,
 } from "@nestjs/common";
 import { Request, Response } from "express";
-import { CommonErrorResponseBody } from "./error-response-body.type";
+
+import { CoreConfig } from "../../config/core.config";
 import { DomainExceptionCode } from "../domain-exception-codes";
+import { CommonErrorResponseBody } from "./error-response-body.type";
 
 @Catch()
 export class AllHttpExceptionsFilter implements ExceptionFilter {
+  constructor(private coreConfig: CoreConfig) {}
+
   catch(exception: any, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -26,9 +30,7 @@ export class AllHttpExceptionsFilter implements ExceptionFilter {
     requestUrl: string,
     message: string,
   ): CommonErrorResponseBody {
-    const isProduction = process.env.NODE_ENV === "production";
-
-    if (isProduction) {
+    if (!this.coreConfig.sendInternalServerErrorDetails) {
       return {
         timestamp: new Date().toISOString(),
         path: null,

@@ -1,18 +1,22 @@
 import { NestFactory } from "@nestjs/core";
 
-import { SETTINGS } from "./settings";
-import { AppModule } from "./app.module";
 import { appSetup } from "./setup/app.setup";
+import { initAppModule } from "./init-app-module";
+import { CoreConfig } from "./core/config/core.config";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const DynamicAppModule = await initAppModule();
+  // создаём на основе донастроенного модуля наше приложение
+  const app = await NestFactory.create(DynamicAppModule);
   app.enableCors();
 
-  appSetup({ app });
-  const PORT = SETTINGS.PORT;
+  const coreConfig = app.get<CoreConfig>(CoreConfig);
 
-  await app.listen(PORT, () => {
-    console.log("Server is running on port " + PORT);
+  appSetup({ app });
+  const port = coreConfig.port;
+
+  await app.listen(port, () => {
+    console.log("Server is running on port " + port);
   });
 }
 bootstrap();

@@ -1,4 +1,3 @@
-import { config } from "dotenv";
 import { Request } from "express";
 import { Reflector } from "@nestjs/core";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
@@ -6,15 +5,20 @@ import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { DomainException } from "../../../../core/exceptions/domain-exceptions";
 import { DomainExceptionCode } from "../../../../core/exceptions/domain-exception-codes";
-
-config();
+import { AuthConfig } from "../../auth/config/auth.config";
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  private readonly validUsername = process.env?.BASIC_AUTH_LOGIN;
-  private readonly validPassword = process.env?.BASIC_AUTH_PASSWORD;
+  private readonly validUsername: string;
+  private readonly validPassword: string;
 
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private authConfig: AuthConfig,
+  ) {
+    this.validUsername = this.authConfig.basicAuthLogin;
+    this.validPassword = this.authConfig.basicAuthPassword;
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();

@@ -1,8 +1,9 @@
-import { config } from "dotenv";
+import { UsersConfig } from "./users/config/users.config";
+
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { JwtModule, JwtService } from "@nestjs/jwt";
 
+import { JwtModule, JwtService } from "@nestjs/jwt";
 import {
   ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
   REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
@@ -22,26 +23,12 @@ import { LocalStrategy } from "./guards/local/local.strategy";
 import { LoginUserCommandHandler } from "./auth/application/usecases/login-user.usecase";
 import { ValidateUserCommandHandler } from "./auth/application/usecases/validate-user.usecase";
 import { CreateUserCommandHandler } from "./users/application/usecases/create-user.usecase";
-import {
-  DeleteUserCommandHandler
-} from "./users/application/usecases/delete-user.usecase";
-import {
-  RegisterUserCommandHandler
-} from "./users/application/usecases/register-user.usecase";
-import {
-  ConfirmUserRegistrationCommandHandler
-} from "./users/application/usecases/confirm-user-registration.usecase";
-import {
-  ResendUserRegistrationEmailCommandHandler
-} from "./users/application/usecases/resend-user-registration-email.usecase";
-import {
-  SendUserPasswordRecoveryCodeCommandHandler
-} from "./users/application/usecases/send-user-password-recovery-code.usecase";
-import {
-  UpdateUserPasswordCommandHandler
-} from "./users/application/usecases/update-user-password.usecase";
-
-config();
+import { DeleteUserCommandHandler } from "./users/application/usecases/delete-user.usecase";
+import { RegisterUserCommandHandler } from "./users/application/usecases/register-user.usecase";
+import { ConfirmUserRegistrationCommandHandler } from "./users/application/usecases/confirm-user-registration.usecase";
+import { ResendUserRegistrationEmailCommandHandler } from "./users/application/usecases/resend-user-registration-email.usecase";
+import { SendUserPasswordRecoveryCodeCommandHandler } from "./users/application/usecases/send-user-password-recovery-code.usecase";
+import { UpdateUserPasswordCommandHandler } from "./users/application/usecases/update-user-password.usecase";
 
 const commandHandlers = [
   ValidateUserCommandHandler,
@@ -60,27 +47,23 @@ const services = [
   UsersExternalService,
   {
     provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-    useFactory: (): JwtService => {
+    useFactory: (usersConfig: UsersConfig): JwtService => {
       return new JwtService({
-        secret: process.env?.ACCESS_TOKEN_SECRET,
-        signOptions: { expiresIn: "10s" },
+        secret: usersConfig.accessTokenSecret,
+        signOptions: { expiresIn: usersConfig.accessTokenExpiresIn },
       });
     },
-    inject: [
-      /*TODO: inject configService. will be in the following lessons*/
-    ],
+    inject: [UsersConfig],
   },
   {
     provide: REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-    useFactory: (): JwtService => {
+    useFactory: (usersConfig: UsersConfig): JwtService => {
       return new JwtService({
-        secret: process.env?.REFRESH_TOKEN_SECRET,
-        signOptions: { expiresIn: "20s" },
+        secret: usersConfig.refreshTokenSecret,
+        signOptions: { expiresIn: usersConfig.refreshTokenExpiresIn },
       });
     },
-    inject: [
-      /*TODO: inject configService. will be in the following lessons*/
-    ],
+    inject: [UsersConfig],
   },
 ];
 

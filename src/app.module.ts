@@ -1,7 +1,8 @@
-import { config } from "dotenv";
-import { Module } from "@nestjs/common";
+// import of this config module must be on the top of imports
+import { configModule } from "./config-dynamic-module";
+
+import { DynamicModule, Module } from "@nestjs/common";
 import { APP_FILTER } from "@nestjs/core";
-import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 
 import { CoreModule } from "./core/core.module";
@@ -10,14 +11,22 @@ import { UserAccountsModule } from "./modules/user-accounts/user-accounts.module
 import { BloggersPlatformModule } from "./modules/bloggers-platform/bloggers-platform.module";
 import { AllHttpExceptionsFilter } from "./core/exceptions/filters/all-exception.filter";
 import { DomainHttpExceptionsFilter } from "./core/exceptions/filters/domain-exception.filter";
-
-config();
+import { CoreConfig } from "./core/config/core.config";
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.MONGO_URL!, {
-      dbName: process.env?.MONGO_DB_NAME,
+    configModule,
+    MongooseModule.forRootAsync({
+      useFactory: (coreConfig: CoreConfig) => {
+        const uri = coreConfig.mongoURL;
+        const dbName = coreConfig.mongoDbName;
+
+        return {
+          uri,
+          dbName,
+        };
+      },
+      inject: [CoreConfig],
     }),
     CoreModule,
     TestingModule,
@@ -37,4 +46,12 @@ config();
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  // eslint-disable-next-line
+  static forRoot(coreConfig: CoreConfig): DynamicModule {
+    return {
+      module: AppModule,
+      imports: [],
+    };
+  }
+}

@@ -2,15 +2,15 @@ import { config } from "dotenv";
 import request from "supertest";
 import { App } from "supertest/types";
 import TestAgent from "supertest/lib/agent";
-import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { MailerService } from "@nestjs-modules/mailer";
 
 import { SETTINGS } from "../settings";
-import { AppModule } from "../app.module";
 import { appSetup } from "../setup/app.setup";
 import { EmailServiceMock } from "./mock/email-service.mock";
-import { EmailService } from "../modules/notifications/email.service";
+import { EmailService } from "../modules/notifications/application/email.service";
+import { initAppModule } from "../init-app-module";
+import { INestApplication } from "@nestjs/common";
 
 config();
 
@@ -28,19 +28,23 @@ export const connectToTestDBAndClearRepositories = () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
+    const DynamicAppModule = await initAppModule();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [DynamicAppModule],
     })
       .overrideProvider(EmailService)
       .useClass(EmailServiceMock)
       .compile();
 
-    app = moduleFixture.createNestApplication();
+    app = moduleFixture.createNestApplication({ logger: false });
+    // const coreConfig = app.get<CoreConfig>(CoreConfig);
     appSetup({ app, env: "e2e_tests" });
 
     await app.init();
 
     req = request(app.getHttpServer());
+
     await req.delete(`${SETTINGS.PATH.TESTING}/all-data`).expect(204);
     // req.set("Authorization", "");
 

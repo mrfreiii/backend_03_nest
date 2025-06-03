@@ -1,5 +1,5 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { EmailService } from "../../modules/notifications/email.service";
+import { EmailService } from "../../modules/notifications/application/email.service";
 
 export class EmailServiceMock extends EmailService {
   static service: EmailServiceMock;

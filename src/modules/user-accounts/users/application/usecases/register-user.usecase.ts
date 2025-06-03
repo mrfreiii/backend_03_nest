@@ -1,7 +1,7 @@
 import { CommandBus, CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 
 import { CreateUserCommand } from "./create-user.usecase";
-import { EmailService } from "../../../../notifications/email.service";
+import { EmailService } from "../../../../notifications/application/email.service";
 import { UsersRepository } from "../../infrastructure/users.repository";
 import { RegisterUserInputDto } from "../../../auth/api/input-dto/register-user.input-dto";
 
