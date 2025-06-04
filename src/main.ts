@@ -8,7 +8,6 @@ async function bootstrap() {
   const DynamicAppModule = await initAppModule();
   // создаём на основе донастроенного модуля наше приложение
   const app = await NestFactory.create(DynamicAppModule);
-  app.enableCors();
 
   const coreConfig = app.get<CoreConfig>(CoreConfig);
 

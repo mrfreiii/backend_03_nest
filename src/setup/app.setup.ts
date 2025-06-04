@@ -1,4 +1,5 @@
 import { INestApplication } from "@nestjs/common";
+import cookieParser from "cookie-parser";
 
 import { pipesSetup } from "./pipes.setup";
 import { swaggerSetup } from "./swagger.setup";
@@ -16,9 +17,15 @@ export function appSetup({
       pipesSetup(app);
       globalPrefixSetup(app);
       swaggerSetup(app);
+
+      app.enableCors();
+      app.use(cookieParser());
       break;
     case "e2e_tests":
       pipesSetup(app);
+
+      app.enableCors();
+      app.use(cookieParser());
       break;
   }
 }

@@ -18,15 +18,18 @@ export class RegisterUserCommand {
 export class RegisterUserCommandHandler
   implements ICommandHandler<RegisterUserCommand, void>
 {
-  constructor(private usersRepository: UsersRepository,
-              private commandBus: CommandBus,
-              private emailService: EmailService,
-              ) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    private commandBus: CommandBus,
+    private emailService: EmailService,
+  ) {}
 
   async execute({ inputData }: RegisterUserCommand): Promise<void> {
-    const {dto, currentURL} = inputData;
+    const { dto, currentURL } = inputData;
 
-    const createdUserId = await this.commandBus.execute(new CreateUserCommand(dto));
+    const createdUserId = await this.commandBus.execute(
+      new CreateUserCommand(dto),
+    );
     const user = await this.usersRepository.findOrNotFoundFail(createdUserId);
 
     const confirmationCode = user.setConfirmationCode();

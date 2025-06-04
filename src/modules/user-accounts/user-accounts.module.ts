@@ -29,13 +29,20 @@ import { ConfirmUserRegistrationCommandHandler } from "./users/application/useca
 import { ResendUserRegistrationEmailCommandHandler } from "./users/application/usecases/resend-user-registration-email.usecase";
 import { SendUserPasswordRecoveryCodeCommandHandler } from "./users/application/usecases/send-user-password-recovery-code.usecase";
 import { UpdateUserPasswordCommandHandler } from "./users/application/usecases/update-user-password.usecase";
+import { Session, SessionSchema } from "./sessions/domain/session.entity";
+import { SessionsRepository } from "./sessions/infrastructure/sessions.repository";
+import { TokenGenerationService } from "./auth/application/tokenGeneration.service";
+import { RefreshTokenCommandHandler } from "./auth/application/usecases/refresh-token.usecase";
+import { LogoutUserCommandHandler } from "./auth/application/usecases/logout-user.usecase";
 
 const commandHandlers = [
   ValidateUserCommandHandler,
   LoginUserCommandHandler,
   CreateUserCommandHandler,
   DeleteUserCommandHandler,
+  LogoutUserCommandHandler,
   RegisterUserCommandHandler,
+  RefreshTokenCommandHandler,
   UpdateUserPasswordCommandHandler,
   ConfirmUserRegistrationCommandHandler,
   ResendUserRegistrationEmailCommandHandler,
@@ -44,6 +51,7 @@ const commandHandlers = [
 
 const services = [
   CryptoService,
+  TokenGenerationService,
   UsersExternalService,
   {
     provide: ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
@@ -72,11 +80,15 @@ const repos = [
   UsersQueryRepository,
   AuthQueryRepository,
   UsersExternalQueryRepository,
+  SessionsRepository,
 ];
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Session.name, schema: SessionSchema },
+    ]),
     NotificationsModule,
     JwtModule,
   ],

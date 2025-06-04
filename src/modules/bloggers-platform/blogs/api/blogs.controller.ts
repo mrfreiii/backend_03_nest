@@ -17,7 +17,6 @@ import { BlogViewDto } from "./view-dto/blogs.view-dto";
 import { CreateBlogInputDto } from "./input-dto/blogs.input-dto";
 import { PostViewDto } from "../../posts/api/view-dto/posts.view-dto";
 import { UpdateBlogInputDto } from "./input-dto/update-blog.input-dto";
-import { CreatePostInputDto } from "../../posts/api/input-dto/posts.input-dto";
 import { PaginatedViewDto } from "../../../../core/dto/base.paginated.view-dto";
 import { GetBlogsQueryParams } from "./input-dto/get-blogs-query-params.input-dto";
 import { GetPostsQueryParams } from "../../posts/api/input-dto/get-posts-query-params.input-dto";

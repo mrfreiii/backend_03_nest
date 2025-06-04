@@ -31,6 +31,11 @@ import { UpdateUserPasswordCommand } from "../../users/application/usecases/upda
 import { ConfirmUserRegistrationCommand } from "../../users/application/usecases/confirm-user-registration.usecase";
 import { ResendUserRegistrationEmailCommand } from "../../users/application/usecases/resend-user-registration-email.usecase";
 import { SendUserPasswordRecoveryCodeCommand } from "../../users/application/usecases/send-user-password-recovery-code.usecase";
+import { CookieJwtAuthGuard } from "../../guards/bearer/cookie-jwt-auth.guard";
+import { ExtractRefreshTokenPayload } from "../../guards/decorators/param/extract-refresh-token-payload";
+import { RefreshTokenPayloadDto } from "../dto/tokensPayload.dto";
+import { RefreshTokenCommand } from "../application/usecases/refresh-token.usecase";
+import { LogoutUserCommand } from "../application/usecases/logout-user.usecase";
 
 @Controller(SETTINGS.PATH.AUTH)
 export class AuthController {
@@ -97,11 +102,17 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   async loginUser(
     @ExtractUserFromRequest() user: UserContextDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{
     accessToken: string;
   }> {
-    const result = await this.commandBus.execute(new LoginUserCommand(user.id));
+    const userAgent = req.headers["user-agent"];
+    const ip = req.ip;
+
+    const result = await this.commandBus.execute(
+      new LoginUserCommand({ userId: user.id, userAgent, ip }),
+    );
 
     response.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
@@ -116,5 +127,39 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@ExtractUserFromRequest() user: UserContextDto): Promise<MeViewDto> {
     return this.authQueryRepository.me(user.id);
+  }
+
+  @Post("refresh-token")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CookieJwtAuthGuard)
+  async refreshToken(
+    @ExtractRefreshTokenPayload() payload: RefreshTokenPayloadDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{
+    accessToken: string;
+  }> {
+    const userAgent = req.headers["user-agent"];
+    const ip = req.ip;
+
+    const result = await this.commandBus.execute(
+      new RefreshTokenCommand({ payload, userAgent, ip }),
+    );
+
+    response.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+
+    return { accessToken: result.accessToken };
+  }
+
+  @Post("logout")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(CookieJwtAuthGuard)
+  async logout(
+    @ExtractRefreshTokenPayload() payload: RefreshTokenPayloadDto,
+  ): Promise<void> {
+    return this.commandBus.execute(new LogoutUserCommand(payload));
   }
 }

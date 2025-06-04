@@ -1,16 +1,17 @@
-import { Inject } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
+import { v4 as uuidv4 } from "uuid";
+import { InjectModel } from "@nestjs/mongoose";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 
 import {
-  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
-  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
-} from "../../../constants/auth-tokens.inject-constants";
-import { LoginUserOutputDto } from "../dto/login-user.output-dto";
-import { UserContextDto } from "../../../guards/dto/user-context.dto";
+  Session,
+  SessionModelType,
+} from "../../../sessions/domain/session.entity";
+import { TokenGenerationService } from "../tokenGeneration.service";
+import { LoginUserInputDto, LoginUserOutputDto } from "../dto/login-user.dto";
+import { SessionsRepository } from "../../../sessions/infrastructure/sessions.repository";
 
 export class LoginUserCommand {
-  constructor(public userId: string) {}
+  constructor(public dto: LoginUserInputDto) {}
 }
 
 @CommandHandler(LoginUserCommand)
@@ -18,21 +19,29 @@ export class LoginUserCommandHandler
   implements ICommandHandler<LoginUserCommand, LoginUserOutputDto>
 {
   constructor(
-    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
-    private accessTokenContext: JwtService,
-    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
-    private refreshTokenContext: JwtService,
+    @InjectModel(Session.name) private SessionModel: SessionModelType,
+    private sessionsRepository: SessionsRepository,
+    private tokenGenerationService: TokenGenerationService,
   ) {}
 
-  async execute({ userId }: LoginUserCommand): Promise<LoginUserOutputDto> {
-    const accessToken = this.accessTokenContext.sign({
-      id: userId,
-    } as UserContextDto);
+  async execute({ dto }: LoginUserCommand): Promise<LoginUserOutputDto> {
+    const { userId, userAgent, ip } = dto;
+    const deviceId = uuidv4();
 
-    const refreshToken = this.refreshTokenContext.sign({
-      id: userId,
-      deviceId: "deviceId",
+    const accessToken = this.tokenGenerationService.createAccessToken(userId);
+    const refreshToken = this.tokenGenerationService.createRefreshToken({
+      userId,
+      deviceId,
     });
+
+    const session = this.SessionModel.createInstance({
+      userId,
+      deviceId,
+      userAgent,
+      ip,
+      refreshToken,
+    });
+    await this.sessionsRepository.save(session);
 
     return Promise.resolve({
       accessToken,
