@@ -50,6 +50,7 @@ export class AuthController {
 
   @Post("registration")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
   async registerUser(@Req() req: Request, @Body() body: RegisterUserInputDto) {
     return this.commandBus.execute(
       new RegisterUserCommand({
@@ -61,6 +62,7 @@ export class AuthController {
 
   @Post("registration-confirmation")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
   async confirmRegistration(@Body() body: ConfirmUserRegistrationInputDto) {
     return this.commandBus.execute(
       new ConfirmUserRegistrationCommand(body.code),
@@ -69,6 +71,7 @@ export class AuthController {
 
   @Post("registration-email-resending")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
   async resendRegistrationEmail(
     @Req() req: Request,
     @Body() body: ResendUserRegistrationEmailInputDto,
@@ -98,6 +101,7 @@ export class AuthController {
 
   @Post("new-password")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
   async updatePassword(@Body() body: UpdatePasswordInputDto) {
     return this.commandBus.execute(new UpdateUserPasswordCommand(body));
   }
