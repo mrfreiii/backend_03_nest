@@ -79,10 +79,10 @@ export const mockDate = (isoDate: string) => {
   global.Date = MockDate;
 };
 
-// export const delayInSec = (delay: number) => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve({});
-//     }, delay * 1000);
-//   });
-// };
+export const delayInSec = (delay: number) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({});
+    }, delay * 1000);
+  });
+};

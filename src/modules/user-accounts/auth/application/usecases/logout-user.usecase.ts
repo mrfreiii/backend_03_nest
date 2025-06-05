@@ -41,7 +41,6 @@ export class LogoutUserCommandHandler
     const isSessionDeleted = await this.sessionsRepository.deleteSession({
       userId,
       deviceId,
-      version,
     });
     if (!isSessionDeleted) {
       throw new DomainException({

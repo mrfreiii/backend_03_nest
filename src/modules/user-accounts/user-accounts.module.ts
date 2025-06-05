@@ -34,6 +34,10 @@ import { SessionsRepository } from "./sessions/infrastructure/sessions.repositor
 import { TokenGenerationService } from "./auth/application/tokenGeneration.service";
 import { RefreshTokenCommandHandler } from "./auth/application/usecases/refresh-token.usecase";
 import { LogoutUserCommandHandler } from "./auth/application/usecases/logout-user.usecase";
+import { SessionsController } from "./sessions/api/sessions.controller";
+import { SessionsQueryRepository } from "./sessions/infrastructure/query/sessions.query-repository";
+import { DeleteSessionByIdCommandHandler } from "./sessions/application/usecases/delete-session-by-id.usecase";
+import { DeleteAllOtherSessionCommandHandler } from "./sessions/application/usecases/delete-all-other-sessions.usecase";
 
 const commandHandlers = [
   ValidateUserCommandHandler,
@@ -43,7 +47,9 @@ const commandHandlers = [
   LogoutUserCommandHandler,
   RegisterUserCommandHandler,
   RefreshTokenCommandHandler,
+  DeleteSessionByIdCommandHandler,
   UpdateUserPasswordCommandHandler,
+  DeleteAllOtherSessionCommandHandler,
   ConfirmUserRegistrationCommandHandler,
   ResendUserRegistrationEmailCommandHandler,
   SendUserPasswordRecoveryCodeCommandHandler,
@@ -81,6 +87,7 @@ const repos = [
   AuthQueryRepository,
   UsersExternalQueryRepository,
   SessionsRepository,
+  SessionsQueryRepository,
 ];
 
 @Module({
@@ -92,7 +99,7 @@ const repos = [
     NotificationsModule,
     JwtModule,
   ],
-  controllers: [UsersController, AuthController],
+  controllers: [UsersController, AuthController, SessionsController],
   providers: [
     ...commandHandlers,
     ...services,

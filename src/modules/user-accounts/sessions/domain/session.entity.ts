@@ -98,7 +98,9 @@ export class Session {
    */
   update(dto: UpdateSessionDomainDto) {
     const deviceTitle = getDeviceTitle(dto.userAgent);
-    const { issuedAt, expirationTime, version } = parseRefreshToken(dto.refreshToken);
+    const { issuedAt, expirationTime, version } = parseRefreshToken(
+      dto.refreshToken,
+    );
 
     this.ip = dto.ip || "unknown ip";
     this.title = deviceTitle;

@@ -6,7 +6,7 @@ export const SETTINGS = {
     POSTS: "/posts",
     COMMENTS: "/comments",
     TESTING: "/testing",
+    SESSIONS: "/security/devices",
     // RATE_LIMIT: '/rate-limit',
-    // SECURITY: '/security',
   },
 };
