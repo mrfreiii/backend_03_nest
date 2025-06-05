@@ -1,16 +1,15 @@
 import { config } from "dotenv";
 import request from "supertest";
-import { App } from "supertest/types";
 import TestAgent from "supertest/lib/agent";
 import { Test, TestingModule } from "@nestjs/testing";
 import { MailerService } from "@nestjs-modules/mailer";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 import { SETTINGS } from "../settings";
 import { appSetup } from "../setup/app.setup";
+import { initAppModule } from "../init-app-module";
 import { EmailServiceMock } from "./mock/email-service.mock";
 import { EmailService } from "../modules/notifications/application/email.service";
-import { initAppModule } from "../init-app-module";
-import { INestApplication } from "@nestjs/common";
 
 config();
 
@@ -25,7 +24,7 @@ export const testBasicAuthHeader = `Basic ${encodedUserCredentials}`;
 export const emailServiceMock = new EmailServiceMock({} as MailerService);
 
 export const connectToTestDBAndClearRepositories = () => {
-  let app: INestApplication<App>;
+  let app: NestExpressApplication;
 
   beforeAll(async () => {
     const DynamicAppModule = await initAppModule();
