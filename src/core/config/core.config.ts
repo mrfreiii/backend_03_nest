@@ -45,15 +45,40 @@ export class CoreConfig {
   })
   sendInternalServerErrorDetails: boolean;
 
+  @IsNumber(
+    {},
+    {
+      message: "Set Env variable RATE_LIMIT_PERIOD_IN_SEC, example: 10",
+    },
+  )
+  rateLimitPeriodInSec: number;
+
+  @IsNumber(
+    {},
+    {
+      message: "Set Env variable RATE_LIMIT_REQUESTS_IN_PERIOD, example: 10",
+    },
+  )
+  rateLimitRequestsInPeriod: number;
+
   constructor(private configService: ConfigService<any, true>) {
     this.env = this.configService.get("NODE_ENV");
     this.port = Number(this.configService.get("PORT"));
+
     this.mongoURL = this.configService.get("MONGO_URL");
     this.mongoDbName = this.configService.get("MONGO_DB_NAME");
+
     this.sendInternalServerErrorDetails =
       configValidationUtility.convertToBoolean(
         this.configService.get("SEND_INTERNAL_SERVER_ERROR_DETAILS"),
       ) as boolean;
+
+    this.rateLimitPeriodInSec = Number(
+      this.configService.get("RATE_LIMIT_PERIOD_IN_SEC"),
+    );
+    this.rateLimitRequestsInPeriod = Number(
+      this.configService.get("RATE_LIMIT_REQUESTS_IN_PERIOD"),
+    );
 
     configValidationUtility.validateConfig(this);
   }

@@ -1,17 +1,18 @@
 // import of this config module must be on the top of imports
 import { configModule } from "./config-dynamic-module";
 
-import { DynamicModule, Module } from "@nestjs/common";
 import { APP_FILTER } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
+import { DynamicModule, Module } from "@nestjs/common";
 
 import { CoreModule } from "./core/core.module";
+import { CoreConfig } from "./core/config/core.config";
 import { TestingModule } from "./modules/testing/testing.module";
 import { UserAccountsModule } from "./modules/user-accounts/user-accounts.module";
 import { BloggersPlatformModule } from "./modules/bloggers-platform/bloggers-platform.module";
+
 import { AllHttpExceptionsFilter } from "./core/exceptions/filters/all-exception.filter";
 import { DomainHttpExceptionsFilter } from "./core/exceptions/filters/domain-exception.filter";
-import { CoreConfig } from "./core/config/core.config";
 
 @Module({
   imports: [

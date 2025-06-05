@@ -8,10 +8,11 @@ import {
   req,
 } from "../helpers";
 import { SETTINGS } from "../../settings";
+import { deleteRateLimitsData } from "../testing/helpers";
 import { DEFAULT_USER_EMAIL, registerTestUser } from "./helpers";
-import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input-dto/register-user.input-dto";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewDto } from "../../modules/user-accounts/users/api/view-dto/users.view-dto";
+import { RegisterUserInputDto } from "../../modules/user-accounts/auth/api/input-dto/register-user.input-dto";
 
 const validConfirmationOrRecoveryCode = "999888777";
 jest.mock("uuid", () => ({
@@ -418,9 +419,9 @@ describe("send password recovery code /password-recovery", () => {
     await registerTestUser([userEmail]);
   });
 
-  // beforeEach(async () => {
-  //   await ioc.get(RateLimitRepository).clearDB();
-  // });
+  beforeEach(async () => {
+    await deleteRateLimitsData();
+  });
 
   afterEach(() => {
     global.Date = RealDate;
@@ -466,54 +467,54 @@ describe("send password recovery code /password-recovery", () => {
     ).toHaveBeenCalledTimes(1);
   });
 
-  // it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
-  //   // attempt #1
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  //
-  //   // attempt #2
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  //
-  //   // attempt #3
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  //
-  //   // attempt #4
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  //
-  //   // attempt #5
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  //
-  //   // attempt #6
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(429);
-  //
-  //   const dateInFuture = add(new Date(), {
-  //     seconds: 10,
-  //   });
-  //   mockDate(dateInFuture.toISOString());
-  //
-  //   // attempt #7
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
-  //     .send({ email: "qwerty" })
-  //     .expect(400);
-  // });
+  it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
+    // attempt #1
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+
+    // attempt #2
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+
+    // attempt #3
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+
+    // attempt #4
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+
+    // attempt #5
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+
+    // attempt #6
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(429);
+
+    const dateInFuture = add(new Date(), {
+      seconds: 10,
+    });
+    mockDate(dateInFuture.toISOString());
+
+    // attempt #7
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+      .send({ email: "qwerty" })
+      .expect(400);
+  });
 });
 
 describe("confirm password recovery /new-password", () => {
@@ -750,61 +751,66 @@ describe("login user /login", () => {
     });
   });
 
-  // it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
-  //   await ioc.get(RateLimitRepository).clearDB();
-  //
-  //   const nonExistentUser: { loginOrEmail: string; password: string } = {
-  //     loginOrEmail: "noExist",
-  //     password: userPassword,
-  //   };
-  //
-  //   // attempt #1
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  //
-  //   // attempt #2
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  //
-  //   // attempt #3
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  //
-  //   // attempt #4
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  //
-  //   // attempt #5
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  //
-  //   // attempt #6
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(429);
-  //
-  //   const dateInFuture = add(new Date(), {
-  //     seconds: 10,
-  //   });
-  //   mockDate(dateInFuture.toISOString());
-  //
-  //   // attempt #7
-  //   await req
-  //     .post(`${SETTINGS.PATH.AUTH}/login`)
-  //     .send(nonExistentUser)
-  //     .expect(401);
-  // });
+  it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
+    await deleteRateLimitsData();
+
+    const nonExistentUser: { loginOrEmail: string; password: string } = {
+      loginOrEmail: "noExist",
+      password: userPassword,
+    };
+
+    // attempt #1
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+
+    // attempt #2
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+
+    // attempt #3
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+
+    // attempt #4
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+
+    // attempt #5
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+
+    // attempt #6
+    const errorRes = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(429);
+
+    expect(errorRes.body.errorsMessages[0]).toEqual({
+      field: "",
+      message: "Too many requests",
+    });
+
+    const dateInFuture = add(new Date(), {
+      seconds: 11,
+    });
+    mockDate(dateInFuture.toISOString());
+
+    // attempt #7
+    await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send(nonExistentUser)
+      .expect(401);
+  });
 });
 
 describe("check user /me", () => {

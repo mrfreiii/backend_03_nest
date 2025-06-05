@@ -13,29 +13,33 @@ import { CommandBus } from "@nestjs/cqrs";
 import { Request, Response } from "express";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
-import { SETTINGS } from "../../../../settings";
+import { JwtAuthGuard } from "../../guards/bearer/jwt-auth.guard";
 import { LocalAuthGuard } from "../../guards/local/local-auth.guard";
+import { CookieJwtAuthGuard } from "../../guards/bearer/cookie-jwt-auth.guard";
+
+import { RefreshTokenPayloadDto } from "../dto/tokensPayload.dto";
 import { UserContextDto } from "../../guards/dto/user-context.dto";
+import { MeViewDto } from "../../users/api/view-dto/users.view-dto";
 import { RegisterUserInputDto } from "./input-dto/register-user.input-dto";
 import { UpdatePasswordInputDto } from "./input-dto/update-password.input-dto";
 import { ConfirmUserRegistrationInputDto } from "./input-dto/confirm-user-registration.input-dto";
 import { SendPasswordRecoveryCodeInputDto } from "./input-dto/send-password-recovery-code.input-dto";
 import { ResendUserRegistrationEmailInputDto } from "./input-dto/resend-user-registration-email.input-dto";
-import { ExtractUserFromRequest } from "../../guards/decorators/param/extract-user-from-request.decorator";
-import { JwtAuthGuard } from "../../guards/bearer/jwt-auth.guard";
-import { MeViewDto } from "../../users/api/view-dto/users.view-dto";
+
 import { LoginUserCommand } from "../application/usecases/login-user.usecase";
-import { AuthQueryRepository } from "../infrastructure/query/auth.query-repository";
+import { LogoutUserCommand } from "../application/usecases/logout-user.usecase";
+import { RefreshTokenCommand } from "../application/usecases/refresh-token.usecase";
 import { RegisterUserCommand } from "../../users/application/usecases/register-user.usecase";
 import { UpdateUserPasswordCommand } from "../../users/application/usecases/update-user-password.usecase";
 import { ConfirmUserRegistrationCommand } from "../../users/application/usecases/confirm-user-registration.usecase";
 import { ResendUserRegistrationEmailCommand } from "../../users/application/usecases/resend-user-registration-email.usecase";
 import { SendUserPasswordRecoveryCodeCommand } from "../../users/application/usecases/send-user-password-recovery-code.usecase";
-import { CookieJwtAuthGuard } from "../../guards/bearer/cookie-jwt-auth.guard";
-import { ExtractRefreshTokenPayload } from "../../guards/decorators/param/extract-refresh-token-payload";
-import { RefreshTokenPayloadDto } from "../dto/tokensPayload.dto";
-import { RefreshTokenCommand } from "../application/usecases/refresh-token.usecase";
-import { LogoutUserCommand } from "../application/usecases/logout-user.usecase";
+
+import { SETTINGS } from "../../../../settings";
+import { AuthQueryRepository } from "../infrastructure/query/auth.query-repository";
+import { ExtractUserFromRequest } from "../../guards/decorators/param/extract-user-from-request.decorator";
+import { ExtractRefreshTokenPayload } from "../../guards/decorators/param/extract-refresh-token-payload.decorator";
+import { RateLimitGuard } from "../../../rateLimit/guards/rate-limit.guard";
 
 @Controller(SETTINGS.PATH.AUTH)
 export class AuthController {
@@ -79,6 +83,7 @@ export class AuthController {
 
   @Post("password-recovery")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(RateLimitGuard)
   async sendPasswordRecoveryCode(
     @Req() req: Request,
     @Body() body: SendPasswordRecoveryCodeInputDto,
@@ -99,7 +104,7 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(HttpStatus.OK)
-  @UseGuards(LocalAuthGuard)
+  @UseGuards(RateLimitGuard, LocalAuthGuard)
   async loginUser(
     @ExtractUserFromRequest() user: UserContextDto,
     @Req() req: Request,

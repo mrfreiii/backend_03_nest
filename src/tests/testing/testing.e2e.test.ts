@@ -49,3 +49,11 @@ describe("delete all data", () => {
     expect(postsRes.body.items.length).toBe(0);
   });
 });
+
+describe("delete rate limits", () => {
+  connectToTestDBAndClearRepositories();
+
+  it("should delete rate limits", async () => {
+    await req.delete(`${SETTINGS.PATH.TESTING}/rate-limits`).expect(204);
+  });
+});
