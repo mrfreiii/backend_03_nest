@@ -63,7 +63,9 @@ export class CoreConfig {
 
   constructor(private configService: ConfigService<any, true>) {
     this.env = this.configService.get("NODE_ENV");
-    this.port = Number(this.configService.get("PORT"));
+    this.port = configValidationUtility.convertToNumber(
+      this.configService.get("PORT"),
+    ) as number;
 
     this.mongoURL = this.configService.get("MONGO_URL");
     this.mongoDbName = this.configService.get("MONGO_DB_NAME");
@@ -73,12 +75,12 @@ export class CoreConfig {
         this.configService.get("SEND_INTERNAL_SERVER_ERROR_DETAILS"),
       ) as boolean;
 
-    this.rateLimitPeriodInSec = Number(
+    this.rateLimitPeriodInSec = configValidationUtility.convertToNumber(
       this.configService.get("RATE_LIMIT_PERIOD_IN_SEC"),
-    );
-    this.rateLimitRequestsInPeriod = Number(
+    ) as number;
+    this.rateLimitRequestsInPeriod = configValidationUtility.convertToNumber(
       this.configService.get("RATE_LIMIT_REQUESTS_IN_PERIOD"),
-    );
+    ) as number;
 
     configValidationUtility.validateConfig(this);
   }

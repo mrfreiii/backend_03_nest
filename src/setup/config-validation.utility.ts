@@ -21,6 +21,13 @@ export const configValidationUtility = {
 
     return null;
   },
+  convertToNumber(value: string) {
+    if (value !== "0" && !value) {
+      return null;
+    }
+
+    return Number(value);
+  },
   getEnumValues<T extends Record<string, string>>(enumObj: T): string[] {
     return Object.values(enumObj);
   },

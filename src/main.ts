@@ -1,9 +1,10 @@
+import { CoreConfig } from "./core/config/core.config";
+
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 
 import { appSetup } from "./setup/app.setup";
 import { initAppModule } from "./init-app-module";
-import { CoreConfig } from "./core/config/core.config";
 
 async function bootstrap() {
   const DynamicAppModule = await initAppModule();
